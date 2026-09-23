@@ -99,3 +99,33 @@ This log documents the incremental step-by-step progress, technical architecture
   - Run `flutter analyze`: zero analyzer issues.
 - **Viva Note**:
   Applying the **Repository Pattern** and **Dependency Inversion Principle** (SOLID) decouples presentation and business logic from the persistence layer. By coding state providers against abstract interfaces (`DoctorRepository`, `BillRepository`, etc.), the underlying mock data source can be replaced with real REST or GraphQL APIs in production without altering UI or state management code.
+
+---
+
+## Step 05: Provider State Architecture & App Navigation Shell
+- **Title**: set up Provider skeletons, BottomNavigationBar and app shell route system
+- **Commit**: `feat(navigation): set up Provider skeletons, BottomNavigationBar and app shell route system`
+- **Files Created**:
+  - `lib/providers/doctor_provider.dart`
+  - `lib/providers/appointment_provider.dart`
+  - `lib/providers/medical_record_provider.dart`
+  - `lib/providers/prescription_provider.dart`
+  - `lib/providers/bill_provider.dart`
+  - `lib/providers/providers.dart`
+  - `lib/screens/app_shell.dart`
+  - `lib/screens/dashboard/dashboard_screen.dart`
+  - `lib/screens/doctors/doctors_screen.dart`
+  - `lib/screens/appointments/appointments_screen.dart`
+  - `lib/screens/records/records_screen.dart`
+  - `lib/screens/billing/billing_screen.dart`
+- **Files Modified**:
+  - `lib/main.dart`
+  - `lib/app.dart`
+  - `test/widget_test.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test`: all 16 tests pass, verifying that the 5-tab NavigationBar switches between tabs correctly.
+  - Launch app: verify 5 bottom navigation tabs (Home, Doctors, Appointments, Records, Bills).
+  - Check the Bills icon: note the dynamic notification badge showing the unpaid invoice count.
+- **Viva Note**:
+  `MultiProvider` registers all domain state holders at the app root, facilitating reactive state distribution down the widget tree using `context.watch()` or `context.select()`. The `IndexedStack` in `AppShell` preserves scroll position and widget state across tab switches, optimizing performance.

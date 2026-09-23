@@ -2,12 +2,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hospital_connect/app.dart';
 
 void main() {
-  testWidgets('Theme preview screen loads', (WidgetTester tester) async {
+  testWidgets('AppShell renders 5-tab NavigationBar and switches tabs',
+      (WidgetTester tester) async {
     await tester.pumpWidget(const HospitalConnectApp(useGoogleFonts: false));
+    await tester.pumpAndSettle();
 
+    // Verify app title and tabs
     expect(find.text('HospitalConnect'), findsOneWidget);
-    expect(find.text('Healthcare Theme Preview'), findsOneWidget);
-    expect(find.text('Upcoming'), findsOneWidget);
-    expect(find.text('Unpaid'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Doctors'), findsOneWidget);
+    expect(find.text('Appointments'), findsOneWidget);
+    expect(find.text('Records'), findsOneWidget);
+    expect(find.text('Bills'), findsOneWidget);
+
+    // Tap 'Doctors' tab
+    await tester.tap(find.text('Doctors'));
+    await tester.pumpAndSettle();
+    expect(find.text('Find Doctors'), findsOneWidget);
+
+    // Tap 'Bills' tab
+    await tester.tap(find.text('Bills'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bills & Payments'), findsOneWidget);
   });
 }
