@@ -65,3 +65,37 @@ This log documents the incremental step-by-step progress, technical architecture
   - Verify immutability and `copyWith` functionality across domain models.
 - **Viva Note**:
   Domain models are defined as immutable classes using `const` constructors and `@immutable`. Computed properties such as `BillModel.totalAmount` prevent data synchronization discrepancies by computing derived values on-the-fly rather than duplicating mutable state.
+
+---
+
+## Step 04: Repository Interfaces & Mock Data Service
+- **Title**: create repository interfaces and MockDataService with realistic sample healthcare data
+- **Commit**: `feat(services): create repository interfaces and MockDataService with realistic sample healthcare data`
+- **Files Created**:
+  - `lib/core/utils/formatters.dart`
+  - `lib/core/utils/validators.dart`
+  - `lib/services/repositories/doctor_repository.dart`
+  - `lib/services/repositories/appointment_repository.dart`
+  - `lib/services/repositories/medical_record_repository.dart`
+  - `lib/services/repositories/prescription_repository.dart`
+  - `lib/services/repositories/bill_repository.dart`
+  - `lib/services/repositories/payment_gateway.dart`
+  - `lib/services/repositories/repositories.dart`
+  - `lib/services/mock/mock_data_service.dart`
+  - `lib/services/mock/mock_doctor_repository.dart`
+  - `lib/services/mock/mock_appointment_repository.dart`
+  - `lib/services/mock/mock_medical_record_repository.dart`
+  - `lib/services/mock/mock_prescription_repository.dart`
+  - `lib/services/mock/mock_bill_repository.dart`
+  - `lib/services/mock/mock_payment_gateway.dart`
+  - `lib/services/mock/mock_services.dart`
+  - `test/validators_test.dart`
+  - `test/repositories_test.dart`
+- **Files Modified**:
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/repositories_test.dart`: confirms mock dataset contains 10 doctors across 5 specialties, 3+ reviews each, 5 medical records, 4 prescriptions, and 5 bills in mixed statuses.
+  - Run `flutter test test/validators_test.dart`: validates phone, age, patient name, and payment field validators.
+  - Run `flutter analyze`: zero analyzer issues.
+- **Viva Note**:
+  Applying the **Repository Pattern** and **Dependency Inversion Principle** (SOLID) decouples presentation and business logic from the persistence layer. By coding state providers against abstract interfaces (`DoctorRepository`, `BillRepository`, etc.), the underlying mock data source can be replaced with real REST or GraphQL APIs in production without altering UI or state management code.
