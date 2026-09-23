@@ -7,13 +7,13 @@ void main() {
     await tester.pumpWidget(const HospitalConnectApp(useGoogleFonts: false));
     await tester.pumpAndSettle();
 
-    // Verify app title and tabs
-    expect(find.text('HospitalConnect'), findsOneWidget);
+    // Verify tabs and initial Dashboard content
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Doctors'), findsOneWidget);
     expect(find.text('Appointments'), findsOneWidget);
     expect(find.text('Records'), findsOneWidget);
     expect(find.text('Bills'), findsOneWidget);
+    expect(find.text('Hello, Aditya 👋'), findsOneWidget);
 
     // Tap 'Doctors' tab
     await tester.tap(find.text('Doctors'));

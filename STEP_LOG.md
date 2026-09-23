@@ -129,3 +129,22 @@ This log documents the incremental step-by-step progress, technical architecture
   - Check the Bills icon: note the dynamic notification badge showing the unpaid invoice count.
 - **Viva Note**:
   `MultiProvider` registers all domain state holders at the app root, facilitating reactive state distribution down the widget tree using `context.watch()` or `context.select()`. The `IndexedStack` in `AppShell` preserves scroll position and widget state across tab switches, optimizing performance.
+
+---
+
+## Step 06: Patient Dashboard Header, Search & Category Chips
+- **Title**: build Patient Dashboard top header, search bar, and category chips
+- **Commit**: `feat(dashboard): build Patient Dashboard top header, search bar, and category chips`
+- **Files Created**:
+  - `lib/widgets/specialty_chip.dart`
+  - `lib/widgets/widgets.dart`
+  - `test/dashboard_test.dart`
+- **Files Modified**:
+  - `lib/screens/dashboard/dashboard_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/dashboard_test.dart`: verifies that the greeting, SOS emergency pill, SearchBar, and category chips render and interact cleanly.
+  - Run `flutter run`: verify "Hello, Aditya 👋", initials avatar, and emergency SOS 108 tag.
+  - Tap different specialty chips (Cardiology, Neurology, Pediatrics, Orthopedics): verify smooth active background transition and filtered doctor count updates live.
+- **Viva Note**:
+  Reusable UI components like `SpecialtyChip` incorporate `Semantics` tags and explicit state animation (`AnimatedContainer`), satisfying mobile accessibility and responsive design guidelines. Real-time filtering through `context.watch<DoctorProvider>()` updates the UI reactively on every keystroke or chip tap.
