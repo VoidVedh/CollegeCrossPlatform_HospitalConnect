@@ -20,12 +20,12 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
 
-  static const List<Widget> _screens = <Widget>[
-    DashboardScreen(),
-    DoctorsScreen(),
-    AppointmentsScreen(),
-    RecordsScreen(),
-    BillingScreen(),
+  late final List<Widget> _screens = <Widget>[
+    DashboardScreen(onSelectTab: _onTabSelected),
+    const DoctorsScreen(),
+    const AppointmentsScreen(),
+    const RecordsScreen(),
+    const BillingScreen(),
   ];
 
   @override

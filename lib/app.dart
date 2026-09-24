@@ -11,7 +11,7 @@ import 'package:hospital_connect/services/mock/mock_services.dart';
 import 'package:provider/provider.dart';
 
 /// Root application widget for HospitalConnect.
-class HospitalConnectApp extends StatelessWidget {
+class HospitalConnectApp extends StatefulWidget {
   const HospitalConnectApp({
     super.key,
     this.useGoogleFonts = true,
@@ -21,11 +21,51 @@ class HospitalConnectApp extends StatelessWidget {
   final bool useGoogleFonts;
 
   @override
+  State<HospitalConnectApp> createState() => _HospitalConnectAppState();
+}
+
+class _HospitalConnectAppState extends State<HospitalConnectApp> {
+  late final MockDataService _fallbackMockData;
+  late final DoctorProvider _fallbackDoctorProvider;
+  late final AppointmentProvider _fallbackAppointmentProvider;
+  late final MedicalRecordProvider _fallbackRecordProvider;
+  late final PrescriptionProvider _fallbackPrescriptionProvider;
+  late final BillProvider _fallbackBillProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _fallbackMockData = MockDataService();
+    _fallbackDoctorProvider =
+        DoctorProvider(MockDoctorRepository(_fallbackMockData));
+    _fallbackAppointmentProvider =
+        AppointmentProvider(MockAppointmentRepository(_fallbackMockData));
+    _fallbackRecordProvider =
+        MedicalRecordProvider(MockMedicalRecordRepository(_fallbackMockData));
+    _fallbackPrescriptionProvider =
+        PrescriptionProvider(MockPrescriptionRepository(_fallbackMockData));
+    _fallbackBillProvider = BillProvider(
+      billRepository: MockBillRepository(_fallbackMockData),
+      paymentGateway: MockPaymentGateway(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _fallbackDoctorProvider.dispose();
+    _fallbackAppointmentProvider.dispose();
+    _fallbackRecordProvider.dispose();
+    _fallbackPrescriptionProvider.dispose();
+    _fallbackBillProvider.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Widget app = MaterialApp(
       title: 'HospitalConnect',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(useGoogleFonts: useGoogleFonts),
+      theme: AppTheme.light(useGoogleFonts: widget.useGoogleFonts),
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/': (_) => const AppShell(),
@@ -42,30 +82,23 @@ class HospitalConnectApp extends StatelessWidget {
       Provider.of<DoctorProvider>(context, listen: false);
       return app;
     } catch (_) {
-      // In isolated widget tests, inject default mock providers so the tree resolves cleanly.
-      final mockData = MockDataService();
+      // In isolated widget tests, inject persistent stateful providers.
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider<DoctorProvider>(
-            create: (_) => DoctorProvider(MockDoctorRepository(mockData)),
+          ChangeNotifierProvider<DoctorProvider>.value(
+            value: _fallbackDoctorProvider,
           ),
-          ChangeNotifierProvider<AppointmentProvider>(
-            create: (_) =>
-                AppointmentProvider(MockAppointmentRepository(mockData)),
+          ChangeNotifierProvider<AppointmentProvider>.value(
+            value: _fallbackAppointmentProvider,
           ),
-          ChangeNotifierProvider<MedicalRecordProvider>(
-            create: (_) =>
-                MedicalRecordProvider(MockMedicalRecordRepository(mockData)),
+          ChangeNotifierProvider<MedicalRecordProvider>.value(
+            value: _fallbackRecordProvider,
           ),
-          ChangeNotifierProvider<PrescriptionProvider>(
-            create: (_) =>
-                PrescriptionProvider(MockPrescriptionRepository(mockData)),
+          ChangeNotifierProvider<PrescriptionProvider>.value(
+            value: _fallbackPrescriptionProvider,
           ),
-          ChangeNotifierProvider<BillProvider>(
-            create: (_) => BillProvider(
-              billRepository: MockBillRepository(mockData),
-              paymentGateway: MockPaymentGateway(),
-            ),
+          ChangeNotifierProvider<BillProvider>.value(
+            value: _fallbackBillProvider,
           ),
         ],
         child: app,

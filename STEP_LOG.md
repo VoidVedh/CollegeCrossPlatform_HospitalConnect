@@ -148,3 +148,25 @@ This log documents the incremental step-by-step progress, technical architecture
   - Tap different specialty chips (Cardiology, Neurology, Pediatrics, Orthopedics): verify smooth active background transition and filtered doctor count updates live.
 - **Viva Note**:
   Reusable UI components like `SpecialtyChip` incorporate `Semantics` tags and explicit state animation (`AnimatedContainer`), satisfying mobile accessibility and responsive design guidelines. Real-time filtering through `context.watch<DoctorProvider>()` updates the UI reactively on every keystroke or chip tap.
+
+---
+
+## Step 07: Quick Action Cards & Upcoming Appointment Preview
+- **Title**: add Quick Action Cards and Upcoming Appointment preview widget
+- **Commit**: `feat(dashboard): add Quick Action Cards and Upcoming Appointment preview widget`
+- **Files Created**:
+  - `lib/widgets/quick_action_card.dart`
+  - `lib/widgets/upcoming_appointment_card.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `lib/screens/dashboard/dashboard_screen.dart`
+  - `lib/screens/app_shell.dart`
+  - `test/dashboard_test.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test`: all 16 tests pass with zero warnings.
+  - Run `flutter run`: verify the Upcoming Appointment card with rich teal gradient, showing Dr. Meera Nambiar's visit tomorrow at 10:00 AM.
+  - Verify the 4 Quick Action cards ("Book Visit", "Prescriptions", "Records", "Pay Bills"). Tapping "Pay Bills" switches immediately to the Bills navigation tab.
+  - Scroll down to verify the Top Rated Specialists carousel displaying doctors with fees in ₹ INR and "Consult" buttons.
+- **Viva Note**:
+  `LayoutBuilder` enables adaptive grid configurations (`crossAxisCount = 4` on wide screens / tablets, `2` on phones), preventing UI distortion across form factors. The `UpcomingAppointmentCard` leverages gradient containers with high-contrast text and icons to establish immediate visual hierarchy for critical patient notifications.

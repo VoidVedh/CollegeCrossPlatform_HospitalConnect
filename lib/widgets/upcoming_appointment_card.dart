@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+import 'package:hospital_connect/core/theme/app_colors.dart';
+import 'package:hospital_connect/core/utils/formatters.dart';
+import 'package:hospital_connect/models/models.dart';
+
+/// Highlight card showing patient's immediate next upcoming appointment or empty booking prompt.
+class UpcomingAppointmentCard extends StatelessWidget {
+  const UpcomingAppointmentCard({
+    super.key,
+    this.appointment,
+    required this.onTapBook,
+    this.onTapDetails,
+  });
+
+  final AppointmentModel? appointment;
+  final VoidCallback onTapBook;
+  final VoidCallback? onTapDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (appointment == null) {
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        color: colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.event_available_rounded,
+                  color: AppColors.primary,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'No Upcoming Appointments',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Schedule a visit with our specialists',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton(
+                onPressed: onTapBook,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  minimumSize: const Size(48, 40),
+                ),
+                child: const Text('Book'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final apt = appointment!;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.secondary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTapDetails,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top row: Upcoming pill & Appointment ID
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.schedule_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Upcoming Appointment',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      apt.id,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Doctor Information
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            apt.doctorName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            apt.doctorSpecialty,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Bottom strip: Date & Slot timing banner
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppFormatters.formatDate(apt.appointmentDate),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        apt.timeSlot,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

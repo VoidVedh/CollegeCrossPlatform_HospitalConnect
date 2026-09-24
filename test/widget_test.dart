@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hospital_connect/app.dart';
 
@@ -11,7 +12,8 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Doctors'), findsOneWidget);
     expect(find.text('Appointments'), findsOneWidget);
-    expect(find.text('Records'), findsOneWidget);
+    expect(
+        find.widgetWithText(NavigationDestination, 'Records'), findsOneWidget);
     expect(find.text('Bills'), findsOneWidget);
     expect(find.text('Hello, Aditya 👋'), findsOneWidget);
 
