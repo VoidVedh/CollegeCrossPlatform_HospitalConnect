@@ -188,3 +188,22 @@ This log documents the incremental step-by-step progress, technical architecture
   - Verify that doctor photos gracefully fall back to an initials avatar when no network image is supplied.
 - **Viva Note**:
   Decoupling the `DoctorCard` into a standalone widget adheres to the Component-Driven Development paradigm. Passing explicit callbacks (`onTap`, `onBookVisit`) instead of embedding navigation logic directly within the card preserves UI flexibility across different screen contexts (e.g., search list vs. recommended carousel).
+
+---
+
+## Step 09: Doctor Search & Filter Catalog Screen
+- **Title**: build Doctor Search and Filter List view screen
+- **Commit**: `feat(doctors): build Doctor Search and Filter List view screen`
+- **Files Created**:
+  - `lib/screens/doctors/doctor_detail_screen.dart`
+  - `test/doctors_screen_test.dart`
+- **Files Modified**:
+  - `lib/screens/doctors/doctors_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/doctors_screen_test.dart`: verifies full search, category filtering, and empty state reset.
+  - Open "Doctors" tab: explore the 10+ doctors catalog.
+  - Tap on the sort icon: toggle sorting by Highest Rated, Most Experienced, or Lowest Consultation Fee.
+  - Type a query in the SearchBar: list updates reactively. Clearing the query or resetting filters instantly restores the catalog.
+- **Viva Note**:
+  The `DoctorsScreen` implements declarative UI synchronization with `DoctorProvider.filteredDoctors`. Utilizing `PopupMenuButton` for multi-criteria sorting demonstrates state preservation while empty states provide immediate actionable remediation via "Clear All Filters", adhering to Nielsen Norman usability heuristics.
