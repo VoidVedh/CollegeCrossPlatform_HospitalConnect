@@ -207,3 +207,22 @@ This log documents the incremental step-by-step progress, technical architecture
   - Type a query in the SearchBar: list updates reactively. Clearing the query or resetting filters instantly restores the catalog.
 - **Viva Note**:
   The `DoctorsScreen` implements declarative UI synchronization with `DoctorProvider.filteredDoctors`. Utilizing `PopupMenuButton` for multi-criteria sorting demonstrates state preservation while empty states provide immediate actionable remediation via "Clear All Filters", adhering to Nielsen Norman usability heuristics.
+
+---
+
+## Step 10: Doctor Detail View with Experience, Bio & Reviews
+- **Title**: construct Doctor Detail view with experience, bio, reviews, clinic address, and fees
+- **Commit**: `feat(doctors): construct Doctor Detail view with experience, bio, reviews, clinic address, and fees`
+- **Files Created**:
+  - `lib/screens/appointments/booking_screen.dart`
+  - `test/doctor_detail_test.dart`
+- **Files Modified**:
+  - `lib/screens/doctors/doctor_detail_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/doctor_detail_test.dart`: verifies metrics row, biography, clinic address, patient reviews, and sticky booking bar.
+  - Tap any doctor from Doctors tab or Top Specialists carousel on Dashboard: opens comprehensive profile.
+  - Verify experience years, rating, and verified patient reviews.
+  - Tap sticky bottom button "Book Appointment": transitions directly into the booking flow.
+- **Viva Note**:
+  The `DoctorDetailScreen` combines key quantitative trust signals (experience, rating, patient counts) with qualitative evidence (verified patient reviews) in an information hierarchy designed for healthcare decision-making. Placing the booking trigger in a persistent, accessible bottom bar ensures the primary conversion action is always accessible without requiring the user to scroll to the end of lengthy reviews.
