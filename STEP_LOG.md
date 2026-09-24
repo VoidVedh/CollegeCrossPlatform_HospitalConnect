@@ -170,3 +170,21 @@ This log documents the incremental step-by-step progress, technical architecture
   - Scroll down to verify the Top Rated Specialists carousel displaying doctors with fees in ₹ INR and "Consult" buttons.
 - **Viva Note**:
   `LayoutBuilder` enables adaptive grid configurations (`crossAxisCount = 4` on wide screens / tablets, `2` on phones), preventing UI distortion across form factors. The `UpcomingAppointmentCard` leverages gradient containers with high-contrast text and icons to establish immediate visual hierarchy for critical patient notifications.
+
+---
+
+## Step 08: Doctor Card Component & Rating Badges
+- **Title**: create Doctor Card component with specialty badges and rating UI
+- **Commit**: `feat(doctors): create Doctor Card component with specialty badges and rating UI`
+- **Files Created**:
+  - `lib/widgets/doctor_card.dart`
+  - `test/doctor_card_test.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/doctor_card_test.dart`: verifies that doctor details, specialty chip, rating badge, experience, fee in ₹, and action callbacks work as expected.
+  - Verify tap targets comply with accessibility standards (min 48x48dp target for buttons).
+  - Verify that doctor photos gracefully fall back to an initials avatar when no network image is supplied.
+- **Viva Note**:
+  Decoupling the `DoctorCard` into a standalone widget adheres to the Component-Driven Development paradigm. Passing explicit callbacks (`onTap`, `onBookVisit`) instead of embedding navigation logic directly within the card preserves UI flexibility across different screen contexts (e.g., search list vs. recommended carousel).
