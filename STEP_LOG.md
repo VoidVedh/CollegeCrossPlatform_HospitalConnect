@@ -226,3 +226,22 @@ This log documents the incremental step-by-step progress, technical architecture
   - Tap sticky bottom button "Book Appointment": transitions directly into the booking flow.
 - **Viva Note**:
   The `DoctorDetailScreen` combines key quantitative trust signals (experience, rating, patient counts) with qualitative evidence (verified patient reviews) in an information hierarchy designed for healthcare decision-making. Placing the booking trigger in a persistent, accessible bottom bar ensures the primary conversion action is always accessible without requiring the user to scroll to the end of lengthy reviews.
+
+---
+
+## Step 11: DatePicker & Dynamic Time-Slot Grid Selector
+- **Title**: implement DatePicker and dynamic Time-Slot grid selector
+- **Commit**: `feat(appointment): implement DatePicker and dynamic Time-Slot grid selector`
+- **Files Created**:
+  - `lib/widgets/slot_selector.dart`
+  - `test/slot_selector_test.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `lib/screens/appointments/booking_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/slot_selector_test.dart`: verifies that 14 days calendar navigation functions, available slots can be chosen, and booked/past slots are visibly disabled with strike-through text.
+  - Open Doctor Detail and tap "Book Appointment": explore the 14-day date picker.
+  - Tap through morning and evening slots: verify active highlight and selected date/time summary card.
+- **Viva Note**:
+  `SlotSelector` enforces domain business constraints at the UI layer by checking doctor availability lists and active bookings before enabling interactive callbacks. Visually differentiating disabled states using contrasting strike-through styling and disabled `Semantics` tags ensures accessible affordance.
