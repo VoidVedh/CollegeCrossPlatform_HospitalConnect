@@ -46,4 +46,20 @@ class AppFormatters {
   static String formatDateTime(DateTime date) {
     return _dateTimeFormat.format(date);
   }
+
+  /// Parses a 12-hour time slot string (e.g. "10:30 AM") into a DateTime on the given [date].
+  static DateTime parseTimeSlot(DateTime date, String timeSlot) {
+    try {
+      final parsedTime = _timeFormat.parse(timeSlot.trim());
+      return DateTime(
+        date.year,
+        date.month,
+        date.day,
+        parsedTime.hour,
+        parsedTime.minute,
+      );
+    } catch (_) {
+      return DateTime(date.year, date.month, date.day);
+    }
+  }
 }

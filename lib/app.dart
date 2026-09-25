@@ -38,8 +38,11 @@ class _HospitalConnectAppState extends State<HospitalConnectApp> {
     _fallbackMockData = MockDataService();
     _fallbackDoctorProvider =
         DoctorProvider(MockDoctorRepository(_fallbackMockData));
-    _fallbackAppointmentProvider =
-        AppointmentProvider(MockAppointmentRepository(_fallbackMockData));
+    _fallbackAppointmentProvider = AppointmentProvider(
+      MockAppointmentRepository(_fallbackMockData),
+      doctorRepository: MockDoctorRepository(_fallbackMockData),
+      billRepository: MockBillRepository(_fallbackMockData),
+    );
     _fallbackRecordProvider =
         MedicalRecordProvider(MockMedicalRecordRepository(_fallbackMockData));
     _fallbackPrescriptionProvider =

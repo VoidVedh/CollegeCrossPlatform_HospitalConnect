@@ -266,3 +266,28 @@ This log documents the incremental step-by-step progress, technical architecture
   - Enter valid information and choose a slot to proceed.
 - **Viva Note**:
   `PatientBookingForm` leverages Flutter's `Form` and `TextFormField` widgets paired with centralized regex-based `AppValidators`. Restricting numeric input with `FilteringTextInputFormatter` and evaluating fields via `AutovalidateMode.onUserInteraction` ensures that invalid payloads are caught immediately at the UI layer before reaching business logic or services.
+
+---
+
+## Step 13: Appointment Confirmation Modal & Booking Persistence
+- **Title**: integrate Appointment Confirmation Modal and persist booking through AppointmentProvider
+- **Commit**: `feat(appointment): integrate Appointment Confirmation Modal and persist booking through AppointmentProvider`
+- **Files Created**:
+  - `lib/widgets/appointment_confirmation_dialog.dart`
+  - `test/appointment_confirmation_test.dart`
+- **Files Modified**:
+  - `lib/core/utils/formatters.dart`
+  - `lib/providers/appointment_provider.dart`
+  - `lib/widgets/widgets.dart`
+  - `lib/screens/appointments/booking_screen.dart`
+  - `lib/main.dart`
+  - `lib/app.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/appointment_confirmation_test.dart`: verifies `APT-XXXXXX` ID generation, doctor slot blocking, pending bill creation, cancellation slot release, and confirmation dialog flow.
+  - From Doctor Detail -> Book Appointment -> pick an available date and slot -> fill patient form -> tap "Review & Confirm Booking".
+  - Inspect itemized charges breakdown (Consultation Fee, 18% GST, Total Payable) in the confirmation dialog.
+  - Tap "Confirm & Book" to see real-time state mutation and the Success Modal featuring the generated `APT-` ID and navigation options.
+- **Viva Note**:
+  `AppointmentProvider.bookAppointment()` acts as the single transactional orchestrator for the appointment workflow. It generates a formatted unique identifier (`APT-XXXXXX`), inserts an upcoming appointment, updates the doctor's slot availability in `DoctorRepository`, and automatically creates an itemized pending invoice in `BillRepository`.
+

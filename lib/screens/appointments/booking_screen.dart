@@ -34,14 +34,25 @@ class _BookingScreenState extends State<BookingScreen> {
     required String patientPhone,
     required String symptomsNote,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Booking details validated for $patientName. Ready for confirmation.',
+    if (_selectedSlot == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an appointment time slot.'),
+          backgroundColor: AppColors.error,
         ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-      ),
+      );
+      return;
+    }
+
+    showAppointmentConfirmationDialog(
+      context: context,
+      doctor: widget.doctor,
+      appointmentDate: _selectedDate,
+      timeSlot: _selectedSlot!,
+      patientName: patientName,
+      patientAge: patientAge,
+      patientPhone: patientPhone,
+      symptomsNote: symptomsNote,
     );
   }
 

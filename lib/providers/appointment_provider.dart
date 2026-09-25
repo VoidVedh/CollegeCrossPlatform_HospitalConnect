@@ -1,15 +1,22 @@
 import 'package:flutter/foundation.dart';
+import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 import 'package:uuid/uuid.dart';
 
 /// State management provider for patient appointments and bookings.
 class AppointmentProvider extends ChangeNotifier {
-  AppointmentProvider(this._repository) {
+  AppointmentProvider(
+    this._repository, {
+    this.doctorRepository,
+    this.billRepository,
+  }) {
     loadAppointments();
   }
 
   final AppointmentRepository _repository;
+  final DoctorRepository? doctorRepository;
+  final BillRepository? billRepository;
   static const Uuid _uuid = Uuid();
 
   List<AppointmentModel> _appointments = <AppointmentModel>[];
@@ -45,7 +52,8 @@ class AppointmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _appointments = await _repository.getAppointments();
+      _appointments =
+          List<AppointmentModel>.from(await _repository.getAppointments());
     } catch (e) {
       _error = 'Failed to load appointments: $e';
     } finally {
@@ -65,6 +73,7 @@ class AppointmentProvider extends ChangeNotifier {
     required DateTime appointmentDate,
     required String timeSlot,
     required String symptomsNote,
+    double consultationFee = 500.0,
   }) async {
     _isLoading = true;
     _error = null;
@@ -91,6 +100,33 @@ class AppointmentProvider extends ChangeNotifier {
 
       final booked = await _repository.bookAppointment(newAppointment);
       _appointments.insert(0, booked);
+
+      // Business rule: A booked slot becomes unavailable immediately
+      if (doctorRepository != null) {
+        final slotDateTime = AppFormatters.parseTimeSlot(appointmentDate, timeSlot);
+        await doctorRepository!.markSlotAvailability(
+          doctorId: doctorId,
+          slot: slotDateTime,
+          isAvailable: false,
+        );
+      }
+
+      // Business rule: Booking creates a linked "pending" bill for the consultation fee
+      if (billRepository != null) {
+        final billSuffix = _uuid.v4().substring(0, 6).toUpperCase();
+        final newBill = BillModel(
+          id: 'BIL-$billSuffix',
+          billDate: appointmentDate,
+          serviceName: 'Consultation - $doctorName ($doctorSpecialty)',
+          consultationFee: consultationFee,
+          labCharges: 0.0,
+          tax: (consultationFee * 0.18).roundToDouble(),
+          status: BillStatus.pending,
+          appointmentId: appointmentId,
+        );
+        await billRepository!.addBill(newBill);
+      }
+
       return booked;
     } catch (e) {
       _error = 'Booking failed: $e';
@@ -101,7 +137,7 @@ class AppointmentProvider extends ChangeNotifier {
     }
   }
 
-  /// Cancels an upcoming appointment.
+  /// Cancels an upcoming appointment and frees its slot.
   Future<AppointmentModel> cancelAppointment(String appointmentId) async {
     _isLoading = true;
     notifyListeners();
@@ -112,6 +148,20 @@ class AppointmentProvider extends ChangeNotifier {
       if (index != -1) {
         _appointments[index] = cancelled;
       }
+
+      // Business rule: Cancelling an upcoming appointment frees its slot
+      if (doctorRepository != null) {
+        final slotDateTime = AppFormatters.parseTimeSlot(
+          cancelled.appointmentDate,
+          cancelled.timeSlot,
+        );
+        await doctorRepository!.markSlotAvailability(
+          doctorId: cancelled.doctorId,
+          slot: slotDateTime,
+          isAvailable: true,
+        );
+      }
+
       return cancelled;
     } catch (e) {
       _error = 'Cancellation failed: $e';

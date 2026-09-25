@@ -28,7 +28,11 @@ void main() {
           create: (_) => DoctorProvider(doctorRepository),
         ),
         ChangeNotifierProvider<AppointmentProvider>(
-          create: (_) => AppointmentProvider(appointmentRepository),
+          create: (_) => AppointmentProvider(
+            appointmentRepository,
+            doctorRepository: doctorRepository,
+            billRepository: billRepository,
+          ),
         ),
         ChangeNotifierProvider<MedicalRecordProvider>(
           create: (_) => MedicalRecordProvider(medicalRecordRepository),
