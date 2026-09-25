@@ -245,3 +245,24 @@ This log documents the incremental step-by-step progress, technical architecture
   - Tap through morning and evening slots: verify active highlight and selected date/time summary card.
 - **Viva Note**:
   `SlotSelector` enforces domain business constraints at the UI layer by checking doctor availability lists and active bookings before enabling interactive callbacks. Visually differentiating disabled states using contrasting strike-through styling and disabled `Semantics` tags ensures accessible affordance.
+
+---
+
+## Step 12: Patient Booking Form with Field Validation
+- **Title**: build Patient Booking Form with field validation
+- **Commit**: `feat(appointment): build Patient Booking Form with field validation`
+- **Files Created**:
+  - `lib/widgets/patient_booking_form.dart`
+  - `test/booking_form_test.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `lib/screens/appointments/booking_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/booking_form_test.dart`: verifies form validation rules, input constraints, and submission gates.
+  - Navigate to Doctor Detail -> Book Appointment -> scroll down to Patient Information.
+  - Tap "Review & Confirm Booking" with empty fields to observe specific validation error alerts.
+  - Type invalid input (e.g. invalid phone, age > 120, short symptoms < 10 characters) and verify inline validation guidance.
+  - Enter valid information and choose a slot to proceed.
+- **Viva Note**:
+  `PatientBookingForm` leverages Flutter's `Form` and `TextFormField` widgets paired with centralized regex-based `AppValidators`. Restricting numeric input with `FilteringTextInputFormatter` and evaluating fields via `AutovalidateMode.onUserInteraction` ensures that invalid payloads are caught immediately at the UI layer before reaching business logic or services.

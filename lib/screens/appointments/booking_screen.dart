@@ -28,6 +28,23 @@ class _BookingScreenState extends State<BookingScreen> {
     _selectedDate = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
   }
 
+  void _handleBookingSubmit({
+    required String patientName,
+    required int patientAge,
+    required String patientPhone,
+    required String symptomsNote,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Booking details validated for $patientName. Ready for confirmation.',
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -174,42 +191,23 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(height: 20),
 
-            // 4. Placeholder for Step 12 Form
+            // 4. Patient Information Form
             Card(
               elevation: 0,
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+              color: colorScheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(color: colorScheme.outlineVariant),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.assignment_ind_outlined,
-                      size: 32,
-                      color: colorScheme.primary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Step 11 Active: Date & Slot Selector',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Patient Info Form with field validation will be added in Step 12.',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
+                child: PatientBookingForm(
+                  isSlotSelected: _selectedSlot != null,
+                  onSubmit: _handleBookingSubmit,
                 ),
               ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
