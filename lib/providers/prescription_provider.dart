@@ -25,12 +25,29 @@ class PrescriptionProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _prescriptions = await _repository.getPrescriptions();
+      _prescriptions = List<PrescriptionModel>.from(
+        await _repository.getPrescriptions(),
+      );
     } catch (e) {
       _error = 'Failed to load prescriptions: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
     }
   }
 

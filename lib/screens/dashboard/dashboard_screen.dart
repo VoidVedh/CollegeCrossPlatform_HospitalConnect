@@ -4,6 +4,7 @@ import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/appointment_provider.dart';
 import 'package:hospital_connect/providers/doctor_provider.dart';
+import 'package:hospital_connect/screens/prescriptions/prescriptions_screen.dart';
 import 'package:hospital_connect/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -288,8 +289,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: Icons.medication_rounded,
               accentColor: AppColors.secondary,
               onTap: () {
-                // Prescriptions tab or sheet
-                _navigateToTab(3, '/records');
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrescriptionsScreen(),
+                  ),
+                );
               },
             ),
             QuickActionCard(

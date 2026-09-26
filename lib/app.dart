@@ -6,6 +6,7 @@ import 'package:hospital_connect/screens/appointments/appointments_screen.dart';
 import 'package:hospital_connect/screens/billing/billing_screen.dart';
 import 'package:hospital_connect/screens/dashboard/dashboard_screen.dart';
 import 'package:hospital_connect/screens/doctors/doctors_screen.dart';
+import 'package:hospital_connect/screens/prescriptions/prescriptions_screen.dart';
 import 'package:hospital_connect/screens/records/records_screen.dart';
 import 'package:hospital_connect/services/mock/mock_services.dart';
 import 'package:provider/provider.dart';
@@ -76,6 +77,7 @@ class _HospitalConnectAppState extends State<HospitalConnectApp> {
         '/doctors': (_) => const DoctorsScreen(),
         '/appointments': (_) => const AppointmentsScreen(),
         '/records': (_) => const RecordsScreen(),
+        '/prescriptions': (_) => const PrescriptionsScreen(),
         '/billing': (_) => const BillingScreen(),
       },
     );

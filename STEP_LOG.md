@@ -312,3 +312,27 @@ This log documents the incremental step-by-step progress, technical architecture
 - **Viva Note**:
   The medical history module implements a chronological timeline representation of patient consultations using custom timeline indicators and Material 3 cards. It organizes sensitive clinical observations separately from downloadable attachments with simulated offline document handlers, following healthcare data display standards.
 
+---
+
+## Step 15: Prescription List & Detailed Medication Cards with Share/Print Modal
+- **Title**: build Prescription List and detailed Medication Card view with share/print modal
+- **Commit**: `feat(prescriptions): build Prescription List and detailed Medication Card view with share/print modal`
+- **Files Created**:
+  - `lib/widgets/prescription_preview_modal.dart`
+  - `lib/screens/prescriptions/prescriptions_screen.dart`
+  - `test/prescriptions_test.dart`
+- **Files Modified**:
+  - `lib/providers/prescription_provider.dart`
+  - `lib/widgets/widgets.dart`
+  - `lib/app.dart`
+  - `lib/screens/dashboard/dashboard_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/prescriptions_test.dart`: verifies prescription listing, expandable medication items (dosage, frequency, duration), modal document generation, and empty state.
+  - From Dashboard, tap the "Prescriptions" quick action card to open `PrescriptionsScreen`.
+  - Tap on any prescription's medication count to expand detailed medication badges (dosage, timing frequency, course duration).
+  - Tap "View & Print" or "Share Rx" to open the simulated official hospital letterhead prescription document with digital doctor signature.
+  - Tap "Print Document" or "Share PDF" in the modal to test simulated offline export feedback.
+- **Viva Note**:
+  The prescription module organizes complex multi-drug regimens with expandable cards and structured data badges (dosage, frequency, duration). The printable preview modal transforms structured application models into an authentic clinical letterhead format with digital practitioner verification, simulating real-world tele-health digital prescriptions.
+
