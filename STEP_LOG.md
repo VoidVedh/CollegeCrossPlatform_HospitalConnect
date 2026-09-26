@@ -291,3 +291,24 @@ This log documents the incremental step-by-step progress, technical architecture
 - **Viva Note**:
   `AppointmentProvider.bookAppointment()` acts as the single transactional orchestrator for the appointment workflow. It generates a formatted unique identifier (`APT-XXXXXX`), inserts an upcoming appointment, updates the doctor's slot availability in `DoctorRepository`, and automatically creates an itemized pending invoice in `BillRepository`.
 
+---
+
+## Step 14: Medical History Timeline & Record Detail View
+- **Title**: construct Medical History timeline and record detail view
+- **Commit**: `feat(medical-records): construct Medical History timeline and record detail view`
+- **Files Created**:
+  - `lib/screens/records/record_detail_screen.dart`
+  - `test/medical_records_test.dart`
+- **Files Modified**:
+  - `lib/providers/medical_record_provider.dart`
+  - `lib/screens/records/records_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/medical_records_test.dart`: verifies chronological timeline rendering, detail screen transition, attachment preview interaction, and empty state.
+  - From bottom navigation, tap the "Records" tab to open the chronological medical visit timeline.
+  - View visit records with date badges, diagnosis titles, treating doctor & hospital info, and attachment counters.
+  - Tap any visit card to inspect the full Clinical Summary, doctor notes, and interactive diagnostic attachments (PDF, JPG).
+  - Tap an attachment's download icon to trigger an offline report preview notification.
+- **Viva Note**:
+  The medical history module implements a chronological timeline representation of patient consultations using custom timeline indicators and Material 3 cards. It organizes sensitive clinical observations separately from downloadable attachments with simulated offline document handlers, following healthcare data display standards.
+

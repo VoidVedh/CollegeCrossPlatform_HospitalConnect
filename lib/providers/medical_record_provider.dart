@@ -24,12 +24,28 @@ class MedicalRecordProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _records = await _repository.getMedicalRecords();
+      _records =
+          List<MedicalRecordModel>.from(await _repository.getMedicalRecords());
     } catch (e) {
       _error = 'Failed to load medical records: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
     }
   }
 
