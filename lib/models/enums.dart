@@ -18,5 +18,16 @@ enum BillStatus {
 enum PaymentMethodType {
   upi,
   card,
-  netBanking,
+  netBanking;
+
+  String get displayName {
+    switch (this) {
+      case PaymentMethodType.upi:
+        return 'UPI';
+      case PaymentMethodType.card:
+        return 'Credit / Debit Card';
+      case PaymentMethodType.netBanking:
+        return 'Net Banking';
+    }
+  }
 }

@@ -351,6 +351,25 @@ This log documents the incremental step-by-step progress, technical architecture
   - Check the prominent Outstanding Dues banner displaying total pending balance in ₹ INR and count of pending invoices.
   - Toggle filter chips: "All Bills", "Pending / Due", "Paid History".
   - Tap "Pay Now" on any pending bill to open the Itemized Bill Summary bottom sheet with full breakdown.
+---
+
+## Step 17: Simulated Payment Gateway Interface (UPI / Cards / Net Banking)
+- **Title**: build simulated Payment Gateway interface (UPI / Cards / Net Banking)
+- **Commit**: `feat(payment): build simulated Payment Gateway interface (UPI / Cards / Net Banking)`
+- **Files Created**:
+  - `lib/screens/payment/payment_screen.dart`
+  - `test/payment_screen_test.dart`
+- **Files Modified**:
+  - `lib/models/enums.dart`
+  - `lib/screens/billing/billing_screen.dart`
+  - `lib/app.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/payment_screen_test.dart`: verifies UPI/Card/NetBanking method tabs, input validation, and chip selection.
+  - From Bills tab, tap "Pay Now" on any pending bill, then tap "Proceed to Pay" in the bottom sheet: transitions to `PaymentScreen`.
+  - In UPI mode: select a quick UPI app chip (e.g. PhonePe) and test validation.
+  - In Card mode: verify 16-digit card formatting, MM/YY expiry, CVV masking, and card brand badges.
+  - In Net Banking mode: select from popular Indian banks (SBI, HDFC, ICICI) or choose from the full bank dropdown.
 - **Viva Note**:
-  `BillModel.totalAmount` is implemented as an un-stored, strictly computed Dart getter (`consultationFee + labCharges + tax`), preventing data desynchronization bugs. The `BillingScreen` offers transparent financial breakdowns paired with color- and text-differentiated status badges (Paid green, Unpaid crimson, Pending amber), fulfilling accessibility guidelines and financial accounting integrity.
+  The simulated Payment Gateway provides a unified multi-rail checkout interface adhering to India's digital payment ecosystem (UPI VPAs, RuPay/Visa/Mastercard cards, and Net Banking). Real-time client-side validation using `AppValidators` safeguards data integrity before dispatching payloads to the payment repository.
 

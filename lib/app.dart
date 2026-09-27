@@ -6,6 +6,8 @@ import 'package:hospital_connect/screens/appointments/appointments_screen.dart';
 import 'package:hospital_connect/screens/billing/billing_screen.dart';
 import 'package:hospital_connect/screens/dashboard/dashboard_screen.dart';
 import 'package:hospital_connect/screens/doctors/doctors_screen.dart';
+import 'package:hospital_connect/models/models.dart';
+import 'package:hospital_connect/screens/payment/payment_screen.dart';
 import 'package:hospital_connect/screens/prescriptions/prescriptions_screen.dart';
 import 'package:hospital_connect/screens/records/records_screen.dart';
 import 'package:hospital_connect/services/mock/mock_services.dart';
@@ -79,6 +81,15 @@ class _HospitalConnectAppState extends State<HospitalConnectApp> {
         '/records': (_) => const RecordsScreen(),
         '/prescriptions': (_) => const PrescriptionsScreen(),
         '/billing': (_) => const BillingScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/payment') {
+          final bill = settings.arguments as BillModel?;
+          if (bill != null) {
+            return MaterialPageRoute(builder: (_) => PaymentScreen(bill: bill));
+          }
+        }
+        return null;
       },
     );
 

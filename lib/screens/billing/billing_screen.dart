@@ -3,6 +3,7 @@ import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/bill_provider.dart';
+import 'package:hospital_connect/screens/payment/payment_screen.dart';
 import 'package:hospital_connect/widgets/bill_card.dart';
 import 'package:provider/provider.dart';
 
@@ -478,12 +479,9 @@ class _BillPaymentSummarySheet extends StatelessWidget {
               key: const Key('proceed_payment_gateway_button'),
               onPressed: () {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Ready to pay ${AppFormatters.formatCurrency(bill.totalAmount)}. Payment Gateway opens in Step 17.',
-                    ),
-                    behavior: SnackBarBehavior.floating,
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PaymentScreen(bill: bill),
                   ),
                 );
               },
