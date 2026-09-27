@@ -1,5 +1,6 @@
 // Barrel export for shared reusable widgets.
 export 'appointment_confirmation_dialog.dart';
+export 'bill_card.dart';
 export 'doctor_card.dart';
 export 'patient_booking_form.dart';
 export 'prescription_preview_modal.dart';

@@ -332,7 +332,25 @@ This log documents the incremental step-by-step progress, technical architecture
   - From Dashboard, tap the "Prescriptions" quick action card to open `PrescriptionsScreen`.
   - Tap on any prescription's medication count to expand detailed medication badges (dosage, timing frequency, course duration).
   - Tap "View & Print" or "Share Rx" to open the simulated official hospital letterhead prescription document with digital doctor signature.
-  - Tap "Print Document" or "Share PDF" in the modal to test simulated offline export feedback.
+---
+
+## Step 16: Bill Summary Screen with Itemized Charges Breakdown
+- **Title**: design Bill Summary screen with itemized charges breakdown
+- **Commit**: `feat(billing): design Bill Summary screen with itemized charges breakdown`
+- **Files Created**:
+  - `lib/widgets/bill_card.dart`
+  - `test/billing_test.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `lib/screens/billing/billing_screen.dart`
+  - `lib/providers/bill_provider.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/billing_test.dart`: verifies `BillModel.totalAmount` computed getter, Outstanding Dues calculation, itemized breakdown (Consultation, Lab, GST), and Paid/Pending filter chips.
+  - From bottom navigation, tap the "Bills" tab.
+  - Check the prominent Outstanding Dues banner displaying total pending balance in ₹ INR and count of pending invoices.
+  - Toggle filter chips: "All Bills", "Pending / Due", "Paid History".
+  - Tap "Pay Now" on any pending bill to open the Itemized Bill Summary bottom sheet with full breakdown.
 - **Viva Note**:
-  The prescription module organizes complex multi-drug regimens with expandable cards and structured data badges (dosage, frequency, duration). The printable preview modal transforms structured application models into an authentic clinical letterhead format with digital practitioner verification, simulating real-world tele-health digital prescriptions.
+  `BillModel.totalAmount` is implemented as an un-stored, strictly computed Dart getter (`consultationFee + labCharges + tax`), preventing data desynchronization bugs. The `BillingScreen` offers transparent financial breakdowns paired with color- and text-differentiated status badges (Paid green, Unpaid crimson, Pending amber), fulfilling accessibility guidelines and financial accounting integrity.
 

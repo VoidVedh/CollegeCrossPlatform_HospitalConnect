@@ -42,12 +42,27 @@ class BillProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _bills = await billRepository.getBills();
+      _bills = List<BillModel>.from(await billRepository.getBills());
     } catch (e) {
       _error = 'Failed to load bills: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
     }
   }
 
