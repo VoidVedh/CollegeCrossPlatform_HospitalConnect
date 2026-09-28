@@ -6,6 +6,7 @@ import 'package:hospital_connect/core/utils/validators.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/bill_provider.dart';
 import 'package:hospital_connect/services/repositories/payment_gateway.dart';
+import 'package:hospital_connect/widgets/payment_receipt_dialog.dart';
 import 'package:provider/provider.dart';
 
 /// Simulated Payment Gateway Screen offering UPI, Cards, and Net Banking options.
@@ -285,10 +286,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 48,
+                child: OutlinedButton.icon(
+                  key: const Key('view_full_receipt_button'),
+                  onPressed: () {
+                    final updatedBill = context
+                            .read<BillProvider>()
+                            .getBillById(widget.bill.id) ??
+                        widget.bill;
+                    PaymentReceiptDialog.show(
+                      sheetContext,
+                      bill: updatedBill,
+                      transactionId: result.transactionId,
+                    );
+                  },
+                  icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                  label: const Text(
+                    'View Full Tax Invoice & Receipt',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
                 child: FilledButton(
                   key: const Key('return_to_billing_button'),
                   onPressed: () {

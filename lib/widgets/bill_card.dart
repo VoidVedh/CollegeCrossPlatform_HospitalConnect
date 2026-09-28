@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
+import 'package:hospital_connect/widgets/payment_receipt_dialog.dart';
 
 /// Card widget displaying an itemized bill with accessible status badge and action triggers.
 class BillCard extends StatelessWidget {
@@ -220,49 +221,73 @@ class BillCard extends StatelessWidget {
 
             // Payment metadata or action button
             if (isPaid)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.statusCompleted.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+              Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.statusCompleted.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(
-                          Icons.verified_rounded,
-                          size: 16,
-                          color: AppColors.statusCompleted,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 16,
+                              color: AppColors.statusCompleted,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              bill.paymentMethod != null
+                                  ? 'Paid via ${bill.paymentMethod!.displayName}'
+                                  : 'Paid in Full',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.statusCompleted,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          bill.paymentMethod != null
-                              ? 'Paid via ${bill.paymentMethod!.name.toUpperCase()}'
-                              : 'Paid in Full',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.statusCompleted,
+                        if (bill.paidAt != null)
+                          Text(
+                            AppFormatters.formatDateShort(bill.paidAt!),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
-                        ),
                       ],
                     ),
-                    if (bill.paidAt != null)
-                      Text(
-                        AppFormatters.formatDateShort(bill.paidAt!),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 42,
+                    child: OutlinedButton.icon(
+                      key: Key('view_receipt_button_${bill.id}'),
+                      onPressed: () {
+                        if (onViewReceipt != null) {
+                          onViewReceipt!();
+                        } else {
+                          PaymentReceiptDialog.show(context, bill: bill);
+                        }
+                      },
+                      icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                      label: const Text(
+                        'View Payment Receipt',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                ],
               )
             else
               SizedBox(

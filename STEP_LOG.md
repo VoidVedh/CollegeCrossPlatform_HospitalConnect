@@ -370,6 +370,26 @@ This log documents the incremental step-by-step progress, technical architecture
   - In UPI mode: select a quick UPI app chip (e.g. PhonePe) and test validation.
   - In Card mode: verify 16-digit card formatting, MM/YY expiry, CVV masking, and card brand badges.
   - In Net Banking mode: select from popular Indian banks (SBI, HDFC, ICICI) or choose from the full bank dropdown.
+---
+
+## Step 18: Payment Processing Dialog & Receipt Confirmation Modal
+- **Title**: implement Payment Processing dialog and Receipt confirmation modal
+- **Commit**: `feat(payment): implement Payment Processing dialog and Receipt confirmation modal`
+- **Files Created**:
+  - `lib/widgets/payment_receipt_dialog.dart`
+  - `test/payment_processing_test.dart`
+- **Files Modified**:
+  - `lib/widgets/widgets.dart`
+  - `lib/widgets/bill_card.dart`
+  - `lib/screens/payment/payment_screen.dart`
+  - `lib/screens/billing/billing_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/payment_processing_test.dart`: verifies `BillProvider.payBill()` status update, payment processing dialog, and `PaymentReceiptDialog`.
+  - From Bills tab, tap "Pay Now" on any unpaid or pending invoice and navigate through Payment Gateway.
+  - Tap "Pay Securely": observe the modal processing animation, followed by the Payment Success confirmation sheet.
+  - Tap "View Full Tax Invoice & Receipt": inspect official e-receipt with invoice ref, transaction ID, payment method, date/time, and itemized breakdown.
+  - Return to Bills tab and verify the bill now displays the green "PAID" badge and a "View Payment Receipt" button.
 - **Viva Note**:
-  The simulated Payment Gateway provides a unified multi-rail checkout interface adhering to India's digital payment ecosystem (UPI VPAs, RuPay/Visa/Mastercard cards, and Net Banking). Real-time client-side validation using `AppValidators` safeguards data integrity before dispatching payloads to the payment repository.
+  `BillProvider.payBill()` coordinates asynchronous gateway authorization with local state mutation, recording `paidAt` timestamps and payment rails (`PaymentMethodType`). Decoupling the digital receipt into `PaymentReceiptDialog` allows access from both the post-checkout completion modal and the historical billing records, adhering to Single Responsibility and Reusability principles.
 

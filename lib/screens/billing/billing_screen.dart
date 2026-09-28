@@ -5,6 +5,7 @@ import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/bill_provider.dart';
 import 'package:hospital_connect/screens/payment/payment_screen.dart';
 import 'package:hospital_connect/widgets/bill_card.dart';
+import 'package:hospital_connect/widgets/payment_receipt_dialog.dart';
 import 'package:provider/provider.dart';
 
 /// Comprehensive Billing and Payments screen with itemized breakdown and dues metrics.
@@ -203,6 +204,8 @@ class _BillingScreenState extends State<BillingScreen> {
                 child: BillCard(
                   bill: bill,
                   onPayPressed: () => _handlePayBill(context, bill),
+                  onViewReceipt: () =>
+                      PaymentReceiptDialog.show(context, bill: bill),
                 ),
               );
             }),
