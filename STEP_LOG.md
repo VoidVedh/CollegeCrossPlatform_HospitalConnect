@@ -390,6 +390,22 @@ This log documents the incremental step-by-step progress, technical architecture
   - Tap "Pay Securely": observe the modal processing animation, followed by the Payment Success confirmation sheet.
   - Tap "View Full Tax Invoice & Receipt": inspect official e-receipt with invoice ref, transaction ID, payment method, date/time, and itemized breakdown.
   - Return to Bills tab and verify the bill now displays the green "PAID" badge and a "View Payment Receipt" button.
+---
+
+## Step 19: Cross-Feature State Synchronization & Appointments Management
+- **Title**: wire cross-feature state so appointments, bills, and dashboard stay in sync
+- **Commit**: `feat(state): wire cross-feature state so appointments, bills, and dashboard stay in sync`
+- **Files Created**:
+  - `test/cross_feature_state_test.dart`
+- **Files Modified**:
+  - `lib/screens/appointments/appointments_screen.dart`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/cross_feature_state_test.dart`: verifies live state synchronization between appointments cancellation, slot freeing, dashboard upcoming visit card, and NavigationBar unpaid bills badge.
+  - From bottom navigation, tap "Appointments": view the 3 tabs (Upcoming, Completed, Cancelled).
+  - Tap "Cancel Visit" on any upcoming appointment: confirm dialog, verify slot is freed and appointment moves to the "Cancelled" tab with a red badge.
+  - Switch to "Home" tab: verify the Upcoming Appointment card immediately updates to "No Upcoming Appointments".
+  - Book a new appointment through the flow: verify a new pending bill appears in the Bills tab, and the NavigationBar "Bills" badge increments live.
 - **Viva Note**:
-  `BillProvider.payBill()` coordinates asynchronous gateway authorization with local state mutation, recording `paidAt` timestamps and payment rails (`PaymentMethodType`). Decoupling the digital receipt into `PaymentReceiptDialog` allows access from both the post-checkout completion modal and the historical billing records, adhering to Single Responsibility and Reusability principles.
+  Cross-feature state synchronization in HospitalConnect relies on Provider's decoupled ChangeNotifier pattern with MultiProvider. Because business rules (slot reservation, invoice creation, cancellation) are encapsulated within domain repositories and orchestrator providers, UI consumers across disconnected tabs (Dashboard, Appointments, Bills) automatically re-render reactively without tight coupling.
 
