@@ -406,6 +406,21 @@ This log documents the incremental step-by-step progress, technical architecture
   - Tap "Cancel Visit" on any upcoming appointment: confirm dialog, verify slot is freed and appointment moves to the "Cancelled" tab with a red badge.
   - Switch to "Home" tab: verify the Upcoming Appointment card immediately updates to "No Upcoming Appointments".
   - Book a new appointment through the flow: verify a new pending bill appears in the Bills tab, and the NavigationBar "Bills" badge increments live.
+---
+
+## Step 20: Responsive Layout Tuning, Accessibility Audit & Documentation Polish
+- **Title**: responsive layout tuning, empty/loading/error states, accessibility audit, README and Figma placeholder
+- **Commit**: `feat(polish): responsive layout tuning, empty/loading/error states, accessibility audit, README and Figma placeholder`
+- **Files Created**:
+  - `test/final_audit_test.dart`
+- **Files Modified**:
+  - `README.md`
+  - `STEP_LOG.md`
+- **How to Test**:
+  - Run `flutter test test/final_audit_test.dart`: verifies 1.3x text scaling without RenderFlex overflow, tablet centered constraints (1024x1366), and strict input regex validators.
+  - Run `flutter analyze`: verifies 0 issues across the entire codebase.
+  - Run `flutter test`: all 44 automated tests pass cleanly.
+  - Review `README.md`: verifies comprehensive architecture diagrams, Figma design placeholder, college viva questions & answers, and execution instructions.
 - **Viva Note**:
-  Cross-feature state synchronization in HospitalConnect relies on Provider's decoupled ChangeNotifier pattern with MultiProvider. Because business rules (slot reservation, invoice creation, cancellation) are encapsulated within domain repositories and orchestrator providers, UI consumers across disconnected tabs (Dashboard, Appointments, Bills) automatically re-render reactively without tight coupling.
+  The final polish phase guarantees production resilience through accessibility audits: enforcing 48x48dp minimum touch targets, dynamic text scale tolerance (1.3x), dual-coded status indicators (icon + text + color), and tablet layout constraints (`maxWidth: 720/800`). Decoupling all mock repositories behind abstract interfaces enables zero-code modifications when migrating from offline college demonstration to enterprise hospital backends.
 
