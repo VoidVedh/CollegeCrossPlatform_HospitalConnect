@@ -36,4 +36,19 @@ class AppColors {
   static const Color statusPaid = Color(0xFF2E7D32);
   static const Color statusUnpaid = Color(0xFFBA1A1A);
   static const Color statusPending = Color(0xFF9A5B00); // amber, contrast-safe on white
+
+  // Utility & Accent colours
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color transparent = Color(0x00000000);
+  static const Color info = Color(0xFF0288D1);
+  static const Color starRating = Color(0xFFF59E0B);
+  static const Color ratingStar = Color(0xFFD97706);
+  static const Color ratingStarContainer = Color(0xFFFEF3C7);
+  static const Color ratingStarText = Color(0xFF92400E);
+  static const Color onPrimary70 = Color(0xB3FFFFFF);
+  static const Color specialtyCardiology = Color(0xFFC62828);
+  static const Color specialtyNeurology = Color(0xFF6A1B9A);
+  static const Color specialtyPediatrics = Color(0xFFE65100);
+  static const Color specialtyOrthopedics = Color(0xFF00695C);
+  static const Color specialtyDermatology = Color(0xFFAD1457);
 }

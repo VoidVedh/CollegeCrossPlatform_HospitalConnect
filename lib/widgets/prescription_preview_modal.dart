@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
-import 'package:hospital_connect/core/utils/formatters.dart';
+import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/models/models.dart';
+import 'package:hospital_connect/widgets/prescription/prescription_document_view.dart';
 
 /// Shows the printable/shareable prescription preview modal.
 Future<void> showPrescriptionPreviewModal({
@@ -11,7 +12,7 @@ Future<void> showPrescriptionPreviewModal({
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     builder: (modalContext) => PrescriptionPreviewModal(
       prescription: prescription,
     ),
@@ -34,7 +35,7 @@ class PrescriptionPreviewModal extends StatelessWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.88,
         maxWidth: 640,
       ),
-      margin: const EdgeInsets.only(top: 32),
+      margin: const EdgeInsets.only(top: AppSpacing.xxxl),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -46,7 +47,7 @@ class PrescriptionPreviewModal extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
+              margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
               decoration: BoxDecoration(
                 color: colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
@@ -56,14 +57,17 @@ class PrescriptionPreviewModal extends StatelessWidget {
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(10),
@@ -74,7 +78,7 @@ class PrescriptionPreviewModal extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: AppSpacing.sm + 2),
                     Text(
                       'Prescription Preview',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -92,353 +96,17 @@ class PrescriptionPreviewModal extends StatelessWidget {
           ),
           const Divider(height: 1),
 
-          // Printable Document Body
+          // Document View
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Hospital letterhead
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(
-                                  Icons.local_hospital_rounded,
-                                  color: AppColors.primary,
-                                  size: 24,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  'HospitalConnect Health',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Outpatient Consultation Record',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            prescription.id,
-                            key: const Key('prescription_preview_id'),
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Divider(color: Colors.grey.shade300),
-                    const SizedBox(height: 8),
-
-                    // Doctor & Issue Date Info
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'PRESCRIBING PHYSICIAN',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              prescription.doctorName,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'DATE OF ISSUE',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              AppFormatters.formatDate(prescription.issueDate),
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Diagnosis Banner
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Text(
-                        'Diagnosis: ${prescription.diagnosis}',
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Rx symbol
-                    const Text(
-                      '℞ Prescribed Medications',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Medication Table
-                    Table(
-                      border: TableBorder(
-                        horizontalInside: BorderSide(
-                          color: Colors.grey.shade200,
-                          width: 1,
-                        ),
-                      ),
-                      columnWidths: const {
-                        0: FlexColumnWidth(3),
-                        1: FlexColumnWidth(2),
-                        2: FlexColumnWidth(2),
-                      },
-                      children: [
-                        TableRow(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                          ),
-                          children: [
-                            _buildTableCell('Medicine & Dose', isHeader: true),
-                            _buildTableCell('Frequency', isHeader: true),
-                            _buildTableCell('Duration', isHeader: true),
-                          ],
-                        ),
-                        ...prescription.medications.map(
-                          (med) => TableRow(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      med.name,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Dosage: ${med.dosage}',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  med.frequency,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade800,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 4,
-                                ),
-                                child: Text(
-                                  med.duration,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade800,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Advice & Instructions
-                    Text(
-                      'PHYSICIAN INSTRUCTIONS & ADVICE',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.secondary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Text(
-                        prescription.instructions,
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Digital Verification stamp
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.verified_rounded,
-                                color: AppColors.statusCompleted,
-                                size: 20,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Digitally Signed & Verified',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                prescription.doctorName,
-                                textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              Text(
-                                'Authorized Medical Practitioner',
-                                textAlign: TextAlign.end,
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: PrescriptionDocumentView(prescription: prescription),
             ),
           ),
 
           // Bottom Action Buttons
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
                 Expanded(
@@ -450,8 +118,11 @@ class PrescriptionPreviewModal extends StatelessWidget {
                         const SnackBar(
                           content: Row(
                             children: [
-                              Icon(Icons.print_rounded,
-                                  color: Colors.white, size: 20),
+                              Icon(
+                                Icons.print_rounded,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -468,7 +139,7 @@ class PrescriptionPreviewModal extends StatelessWidget {
                     label: const Text('Print Document'),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: FilledButton.icon(
                     key: const Key('share_prescription_modal_button'),
@@ -478,8 +149,11 @@ class PrescriptionPreviewModal extends StatelessWidget {
                         const SnackBar(
                           content: Row(
                             children: [
-                              Icon(Icons.share_rounded,
-                                  color: Colors.white, size: 20),
+                              Icon(
+                                Icons.share_rounded,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -500,20 +174,6 @@ class PrescriptionPreviewModal extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTableCell(String text, {bool isHeader = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: isHeader ? FontWeight.w700 : FontWeight.w500,
-          color: isHeader ? Colors.black87 : Colors.grey.shade800,
-        ),
       ),
     );
   }

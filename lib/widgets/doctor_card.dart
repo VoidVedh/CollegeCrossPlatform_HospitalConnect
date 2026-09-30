@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
+import 'package:hospital_connect/core/theme/app_radius.dart';
+import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
+import 'package:hospital_connect/widgets/common/doctor_avatar.dart';
 
-/// Small, reusable, accessible Doctor Card component with specialty badge and rating UI.
+/// Card widget displaying a doctor's information, specialty badge, rating,
+/// and booking actions.
 class DoctorCard extends StatelessWidget {
   const DoctorCard({
     super.key,
@@ -19,13 +23,13 @@ class DoctorCard extends StatelessWidget {
   Color _getSpecialtyColor(String specialty) {
     switch (specialty.toLowerCase()) {
       case 'cardiology':
-        return const Color(0xFFC62828); // Rich crimson/red
+        return AppColors.specialtyCardiology;
       case 'neurology':
-        return const Color(0xFF6A1B9A); // Deep purple
+        return AppColors.specialtyNeurology;
       case 'pediatrics':
-        return const Color(0xFFE65100); // Warm orange
+        return AppColors.specialtyPediatrics;
       case 'orthopedics':
-        return const Color(0xFF00695C); // Deep teal/cyan
+        return AppColors.specialtyOrthopedics;
       case 'general medicine':
       default:
         return AppColors.primary;
@@ -37,30 +41,24 @@ class DoctorCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final specialtyColor = _getSpecialtyColor(doctor.specialty);
-    final initials = doctor.name
-        .split(' ')
-        .where((part) => part.isNotEmpty && part != 'Dr.')
-        .map((part) => part[0])
-        .take(2)
-        .join();
 
     return Semantics(
       button: true,
       label:
           'Doctor ${doctor.name}, ${doctor.specialty}, Rating ${doctor.rating}, Fee ${AppFormatters.formatCurrency(doctor.consultationFee)}',
       child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 2),
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.roundedLg,
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
         color: colorScheme.surface,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.roundedLg,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -68,19 +66,14 @@ class DoctorCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
+                    DoctorAvatar(
+                      name: doctor.name,
                       radius: 26,
-                      backgroundColor:
-                          specialtyColor.withValues(alpha: 0.12),
-                      child: Text(
-                        initials.isEmpty ? 'DR' : initials,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: specialtyColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      backgroundColor: specialtyColor.withValues(alpha: 0.12),
+                      foregroundColor: specialtyColor,
+                      heroTag: 'doctor_avatar_${doctor.id}',
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: AppSpacing.md + 2),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,16 +84,16 @@ class DoctorCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           // Specialty Chip Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xxs + 1,
                             ),
                             decoration: BoxDecoration(
                               color: specialtyColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: AppRadius.roundedSm,
                             ),
                             child: Text(
                               doctor.specialty,
@@ -116,12 +109,12 @@ class DoctorCard extends StatelessWidget {
                     // Rating block
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
                       ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
+                      decoration: const BoxDecoration(
+                        color: AppColors.ratingStarContainer,
+                        borderRadius: AppRadius.roundedSm,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -129,13 +122,13 @@ class DoctorCard extends StatelessWidget {
                           const Icon(
                             Icons.star_rounded,
                             size: 16,
-                            color: Color(0xFFD97706),
+                            color: AppColors.ratingStar,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             doctor.rating.toStringAsFixed(1),
                             style: theme.textTheme.labelMedium?.copyWith(
-                              color: const Color(0xFF92400E),
+                              color: AppColors.ratingStarText,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -144,7 +137,7 @@ class DoctorCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
                 // Experience & Hospital address info
                 Row(
@@ -154,20 +147,20 @@ class DoctorCard extends StatelessWidget {
                       size: 15,
                       color: colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs + 2),
                     Text(
                       '${doctor.experienceYears} yrs experience',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Icon(
                       Icons.local_hospital_outlined,
                       size: 15,
                       color: colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: AppSpacing.xs + 2),
                     Expanded(
                       child: Text(
                         doctor.hospitalName,
@@ -180,10 +173,10 @@ class DoctorCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: AppSpacing.md + 2),
 
                 const Divider(height: 1),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
                 // Bottom row: Fee and Action buttons
                 Row(
@@ -213,16 +206,20 @@ class DoctorCard extends StatelessWidget {
                         OutlinedButton(
                           onPressed: onTap,
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md + 2,
+                            ),
                             minimumSize: const Size(48, 40),
                           ),
                           child: const Text('Profile'),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         FilledButton(
                           onPressed: onBookVisit,
                           style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                            ),
                             minimumSize: const Size(48, 40),
                           ),
                           child: const Text('Book Visit'),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
-import 'package:hospital_connect/core/utils/formatters.dart';
+import 'package:hospital_connect/core/theme/app_radius.dart';
+import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/appointment_provider.dart';
 import 'package:hospital_connect/services/booking_coordinator.dart';
+import 'package:hospital_connect/widgets/appointment_success_modal.dart';
+import 'package:hospital_connect/widgets/booking/booking_summary_card.dart';
 import 'package:provider/provider.dart';
 
 /// Shows the interactive pre-booking confirmation dialog followed by success modal.
@@ -135,15 +138,15 @@ class _AppointmentConfirmationDialogState
     final colorScheme = theme.colorScheme;
 
     if (_bookedAppointment != null) {
-      return _buildSuccessView(context, _bookedAppointment!);
+      return AppointmentSuccessModal(appointment: _bookedAppointment!);
     }
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.roundedXxl),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,10 +155,10 @@ class _AppointmentConfirmationDialogState
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(AppSpacing.sm + 2),
+                    decoration: const BoxDecoration(
                       color: AppColors.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.roundedMd,
                     ),
                     child: const Icon(
                       Icons.event_available_rounded,
@@ -163,7 +166,7 @@ class _AppointmentConfirmationDialogState
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: AppSpacing.md + 2),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,151 +188,24 @@ class _AppointmentConfirmationDialogState
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
 
-              // Doctor Summary Card
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Column(
-                  children: [
-                    _buildRow(
-                      context,
-                      icon: Icons.medical_services_outlined,
-                      label: 'Doctor',
-                      value: widget.doctor.name,
-                      bold: true,
-                    ),
-                    const Divider(height: 16),
-                    _buildRow(
-                      context,
-                      icon: Icons.local_hospital_outlined,
-                      label: 'Specialty / Hospital',
-                      value: '${widget.doctor.specialty} • ${widget.doctor.hospitalName}',
-                    ),
-                    const Divider(height: 16),
-                    _buildRow(
-                      context,
-                      icon: Icons.calendar_today_rounded,
-                      label: 'Date & Time',
-                      value:
-                          '${AppFormatters.formatDate(widget.appointmentDate)} at ${widget.timeSlot}',
-                      highlight: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Patient Summary Card
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Column(
-                  children: [
-                    _buildRow(
-                      context,
-                      icon: Icons.person_outline_rounded,
-                      label: 'Patient',
-                      value: '${widget.patientName} (${widget.patientAge} yrs)',
-                    ),
-                    const Divider(height: 16),
-                    _buildRow(
-                      context,
-                      icon: Icons.phone_outlined,
-                      label: 'Contact',
-                      value: '+91 ${widget.patientPhone}',
-                    ),
-                    const Divider(height: 16),
-                    _buildRow(
-                      context,
-                      icon: Icons.notes_rounded,
-                      label: 'Symptoms',
-                      value: widget.symptomsNote,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Estimated Consultation Charges
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Consultation Fee',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                        Text(
-                          AppFormatters.formatCurrency(_consultationFee),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Estimated GST (18%)',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Text(
-                          AppFormatters.formatCurrency(_tax),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Payable',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          AppFormatters.formatCurrency(_totalAmount),
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              // Summary Cards
+              BookingSummaryCards(
+                doctor: widget.doctor,
+                appointmentDate: widget.appointmentDate,
+                timeSlot: widget.timeSlot,
+                patientName: widget.patientName,
+                patientAge: widget.patientAge,
+                patientPhone: widget.patientPhone,
+                symptomsNote: widget.symptomsNote,
+                consultationFee: _consultationFee,
+                tax: _tax,
+                totalAmount: _totalAmount,
               ),
 
               if (_errorMessage != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   _errorMessage!,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -338,19 +214,19 @@ class _AppointmentConfirmationDialogState
                   ),
                 ),
               ],
-
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
 
               // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                      onPressed:
+                          _isSubmitting ? null : () => Navigator.of(context).pop(),
                       child: const Text('Edit Details'),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: FilledButton(
                       key: const Key('confirm_booking_dialog_button'),
@@ -361,7 +237,7 @@ class _AppointmentConfirmationDialogState
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: AppColors.surface,
                               ),
                             )
                           : const Text('Confirm & Book'),
@@ -373,217 +249,6 @@ class _AppointmentConfirmationDialogState
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSuccessView(BuildContext context, AppointmentModel appointment) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Success Icon Badge
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: AppColors.statusCompleted.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.statusCompleted,
-                  size: 42,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                'Appointment Confirmed!',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your doctor appointment has been successfully scheduled.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Appointment ID Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'APPOINTMENT ID',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      appointment.id,
-                      key: const Key('confirmed_appointment_id_text'),
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Summary Details
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    _buildSimpleRow('Doctor', appointment.doctorName),
-                    const SizedBox(height: 6),
-                    _buildSimpleRow(
-                      'Date & Time',
-                      '${AppFormatters.formatDate(appointment.appointmentDate)} at ${appointment.timeSlot}',
-                    ),
-                    const SizedBox(height: 6),
-                    _buildSimpleRow('Patient', appointment.patientName),
-                    const SizedBox(height: 6),
-                    _buildSimpleRow(
-                      'Billing',
-                      'Pending invoice generated (Pay anytime)',
-                      valueColor: AppColors.statusPending,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Action Buttons
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  key: const Key('view_appointments_modal_button'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    // Pop booking screen and navigate to root with appointments tab
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  icon: const Icon(Icons.calendar_month_rounded),
-                  label: const Text('Go to Appointments'),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  key: const Key('done_booking_modal_button'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  child: const Text('Back to Home'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSimpleRow(String label, String value, {Color? valueColor}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-        ),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: valueColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRow(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-    bool bold = false,
-    bool highlight = false,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          size: 18,
-          color: highlight ? AppColors.primary : colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: bold || highlight ? FontWeight.w700 : FontWeight.w500,
-                  color: highlight ? AppColors.primary : null,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
-import 'package:hospital_connect/core/utils/formatters.dart';
+import 'package:hospital_connect/core/theme/app_radius.dart';
+import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/models/models.dart';
+import 'package:hospital_connect/widgets/receipt/receipt_details_table.dart';
 
 /// Modal dialog displaying an official digital payment receipt and itemized breakdown.
 class PaymentReceiptDialog extends StatelessWidget {
@@ -43,7 +45,7 @@ class PaymentReceiptDialog extends StatelessWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.9,
         maxWidth: 640,
       ),
-      margin: const EdgeInsets.only(top: 24),
+      margin: const EdgeInsets.only(top: AppSpacing.xxl),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -55,10 +57,13 @@ class PaymentReceiptDialog extends StatelessWidget {
             child: Container(
               width: 36,
               height: 4,
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              margin: const EdgeInsets.only(
+                top: AppSpacing.md,
+                bottom: AppSpacing.sm,
+              ),
               decoration: BoxDecoration(
                 color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: AppRadius.roundedFull,
               ),
             ),
           ),
@@ -66,12 +71,17 @@ class PaymentReceiptDialog extends StatelessWidget {
           // Scrollable Receipt Body
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.xl,
+                AppSpacing.xxl,
+              ),
               children: [
                 // Top Success Indicator
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
                       color: AppColors.statusCompleted.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
@@ -83,7 +93,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Center(
                   child: Text(
                     'Payment Receipt',
@@ -100,175 +110,22 @@ class PaymentReceiptDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // Official Receipt Box
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header info
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'RECEIPT / TAX INVOICE',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  letterSpacing: 1,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                bill.id,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.statusCompleted
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.verified_rounded,
-                                  size: 14,
-                                  color: AppColors.statusCompleted,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'PAID',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.statusCompleted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 24),
-
-                      // Metadata Rows
-                      _buildReceiptRow(
-                        'Service Name',
-                        bill.serviceName,
-                        theme,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildReceiptRow(
-                        'Transaction ID',
-                        effectiveTxn,
-                        theme,
-                        isMonospace: true,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildReceiptRow(
-                        'Payment Method',
-                        bill.paymentMethod != null
-                            ? bill.paymentMethod!.displayName
-                            : 'Digital Payment',
-                        theme,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildReceiptRow(
-                        'Date & Time',
-                        AppFormatters.formatDateTime(effectivePaidAt),
-                        theme,
-                      ),
-                      if (bill.appointmentId != null) ...[
-                        const SizedBox(height: 8),
-                        _buildReceiptRow(
-                          'Appointment Ref',
-                          bill.appointmentId!,
-                          theme,
-                        ),
-                      ],
-                      const Divider(height: 24),
-
-                      // Charges Breakdown
-                      Text(
-                        'ITEMIZED CHARGES',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      _buildItemRow(
-                        'Doctor Consultation Fee',
-                        bill.consultationFee,
-                        theme,
-                      ),
-                      const SizedBox(height: 6),
-                      _buildItemRow(
-                        'Diagnostic / Laboratory Tests',
-                        bill.labCharges,
-                        theme,
-                      ),
-                      const SizedBox(height: 6),
-                      _buildItemRow(
-                        'GST / Taxes (18%)',
-                        bill.tax,
-                        theme,
-                      ),
-                      const Divider(height: 20),
-
-                      // Total Paid
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total Amount Paid',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            AppFormatters.formatCurrency(bill.totalAmount),
-                            key: const Key('receipt_total_amount_text'),
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                ReceiptDetailsTable(
+                  bill: bill,
+                  transactionId: effectiveTxn,
+                  paidAt: effectivePaidAt,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // Verification Stamp
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: AppColors.secondary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.roundedMd,
                     border: Border.all(
                       color: AppColors.secondary.withValues(alpha: 0.2),
                     ),
@@ -280,7 +137,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                         size: 20,
                         color: AppColors.secondary,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: AppSpacing.sm + 2),
                       Expanded(
                         child: Text(
                           'This computer-generated receipt is digitally signed and does not require a physical signature.',
@@ -293,7 +150,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // Action Buttons
                 Row(
@@ -315,7 +172,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                         label: const Text('Download'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: OutlinedButton.icon(
                         key: const Key('share_receipt_button'),
@@ -335,7 +192,7 @@ class PaymentReceiptDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -350,52 +207,6 @@ class PaymentReceiptDialog extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildReceiptRow(
-    String label,
-    String value,
-    ThemeData theme, {
-    bool isMonospace = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          value,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontFamily: isMonospace ? 'monospace' : null,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildItemRow(String label, double amount, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          AppFormatters.formatCurrency(amount),
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }
