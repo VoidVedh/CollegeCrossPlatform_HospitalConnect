@@ -54,6 +54,15 @@ class AppointmentProvider extends ChangeNotifier with SafeNotifier {
     return sorted.first;
   }
 
+  /// Retrieves a specific appointment by its ID, or null if not found.
+  AppointmentModel? getAppointmentById(String id) {
+    try {
+      return _appointments.firstWhere((a) => a.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Collision-safe appointment ID generator.
   static String generateUniqueAppointmentId(Iterable<String> existingIds) {
     final existingSet = existingIds.toSet();

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hospital_connect/core/constants/app_constants.dart';
+import 'package:hospital_connect/core/utils/clock.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 
@@ -36,7 +37,9 @@ class DoctorSlot {
 
 /// Single source of truth generating deterministic time-slot availability grids.
 class SlotScheduleService {
-  const SlotScheduleService();
+  const SlotScheduleService({this.clock = const SystemClock()});
+
+  final Clock clock;
 
   /// Standard working hours template (09:00 to 17:30 in 30-min steps, excluding lunch gap 13:00-14:00).
   List<DateTime> generateWorkingHoursTemplate(DateTime date) {
@@ -80,7 +83,7 @@ class SlotScheduleService {
     required List<AppointmentModel> existingAppointments,
     DateTime? now,
   }) {
-    final currentTime = now ?? DateTime.now();
+    final currentTime = now ?? clock.now();
     final template = generateWorkingHoursTemplate(date);
 
     return template.map((slotDateTime) {
