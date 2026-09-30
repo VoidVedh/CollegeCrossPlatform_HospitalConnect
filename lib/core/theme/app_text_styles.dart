@@ -8,6 +8,14 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTextStyles {
   const AppTextStyles._();
 
+  static const List<String> fallbackFontFamilies = [
+    'Roboto',
+    'SF Pro Text',
+    'Segoe UI',
+    'Helvetica Neue',
+    'sans-serif',
+  ];
+
   static TextTheme textTheme({bool useGoogleFonts = true}) {
     const TextTheme base = TextTheme(
       displaySmall: TextStyle(fontSize: 34, fontWeight: FontWeight.w700, height: 1.2),
@@ -23,6 +31,7 @@ class AppTextStyles {
       labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.3),
       labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.3),
     );
-    return useGoogleFonts ? GoogleFonts.interTextTheme(base) : base;
+    final resolved = useGoogleFonts ? GoogleFonts.interTextTheme(base) : base;
+    return resolved.apply(fontFamilyFallback: fallbackFontFamilies);
   }
 }
