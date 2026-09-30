@@ -182,12 +182,16 @@ HospitalConnect includes 44+ automated unit, widget, and integration tests:
 | `test/payment_screen_test.dart` | UPI, Card, Net Banking tabs, form validation, error handling |
 | `test/payment_processing_test.dart` | Payment processing dialog, `payBill()` status update, receipt modal |
 | `test/cross_feature_state_test.dart` | Appointments cancellation, slot release, live dashboard & badge sync |
+| `test/integration_workflow_test.dart` | Full end-to-end patient journey: Discover -> Book -> Invoicing -> Settle |
 | `test/final_audit_test.dart` | Accessibility, 1.3x text scaling resilience, tablet responsive check |
 
 Run all tests:
 ```bash
 flutter test
 ```
+
+### Continuous Integration (CI)
+GitHub Actions workflow configured in `.github/workflows/flutter_ci.yml` runs automated static analysis (`flutter analyze`) and test suite verification (`flutter test --coverage`) on every push to `main`.
 
 ---
 
