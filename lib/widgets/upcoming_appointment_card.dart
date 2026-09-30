@@ -36,8 +36,8 @@ class UpcomingAppointmentCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
@@ -45,23 +45,27 @@ class UpcomingAppointmentCard extends StatelessWidget {
                 child: const Icon(
                   Icons.event_available_rounded,
                   color: AppColors.primary,
-                  size: 26,
+                  size: 24,
                 ),
               ),
-              const SizedBox(width: AppSpacing.lg),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'No Upcoming Appointments',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
-                      'Schedule a visit with our specialists',
+                      'Schedule a specialist visit',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -69,11 +73,12 @@ class UpcomingAppointmentCard extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: AppSpacing.xs),
               FilledButton(
                 onPressed: onTapBook,
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md + 2),
-                  minimumSize: const Size(48, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  minimumSize: const Size(48, 48),
                 ),
                 child: const Text('Book'),
               ),
@@ -115,8 +120,11 @@ class UpcomingAppointmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top row: Upcoming pill & Appointment ID
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -137,7 +145,7 @@ class UpcomingAppointmentCard extends StatelessWidget {
                           ),
                           SizedBox(width: AppSpacing.xs + 2),
                           Text(
-                            'Upcoming Appointment',
+                            'Upcoming',
                             style: TextStyle(
                               color: AppColors.onPrimary,
                               fontSize: 12,
@@ -208,35 +216,62 @@ class UpcomingAppointmentCard extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.15),
                     borderRadius: AppRadius.roundedMd,
                   ),
-                  child: Row(
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
                     children: [
-                      const Icon(
-                        Icons.calendar_today_rounded,
-                        color: AppColors.onPrimary,
-                        size: 16,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        AppFormatters.formatDate(apt.appointmentDate),
-                        style: const TextStyle(
-                          color: AppColors.onPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 220),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_rounded,
+                              color: AppColors.onPrimary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Flexible(
+                              child: Text(
+                                AppFormatters.formatDate(apt.appointmentDate),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.onPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Spacer(),
-                      const Icon(
-                        Icons.access_time_rounded,
-                        color: AppColors.onPrimary,
-                        size: 16,
-                      ),
-                      const SizedBox(width: AppSpacing.xs + 2),
-                      Text(
-                        apt.timeSlot,
-                        style: const TextStyle(
-                          color: AppColors.onPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 220),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.access_time_rounded,
+                              color: AppColors.onPrimary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: AppSpacing.xs + 2),
+                            Flexible(
+                              child: Text(
+                                apt.timeSlot,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.onPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

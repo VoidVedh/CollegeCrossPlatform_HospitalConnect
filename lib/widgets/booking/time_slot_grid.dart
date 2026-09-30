@@ -27,8 +27,11 @@ class TimeSlotGrid extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Time Slot Header & Legend
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
           children: [
             Text(
               'Select Time Slot',
@@ -36,14 +39,15 @@ class TimeSlotGrid extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            Row(
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: [
                 _buildLegendItem(
                   colorScheme.surface,
                   'Available',
                   BorderSide(color: colorScheme.outlineVariant),
                 ),
-                const SizedBox(width: AppSpacing.sm),
                 _buildLegendItem(
                   colorScheme.surfaceContainerHighest,
                   'Booked',
@@ -64,19 +68,22 @@ class TimeSlotGrid extends StatelessWidget {
             crossAxisCount: 3,
             mainAxisSpacing: AppSpacing.sm,
             crossAxisSpacing: AppSpacing.sm,
-            childAspectRatio: 2.6,
+            mainAxisExtent: 48,
           ),
           itemBuilder: (context, index) {
             final slot = slots[index];
             final isDisabled = !slot.isAvailable;
             final isSelected = selectedSlot == slot.time;
+            final statusText = isSelected
+                ? 'selected'
+                : (isDisabled ? (slot.isPast ? 'past' : 'booked') : 'available');
 
             return Semantics(
               button: true,
               enabled: !isDisabled,
               selected: isSelected,
-              label:
-                  '${slot.time}, ${isDisabled ? (slot.isPast ? "Past" : "Booked") : "Available"}',
+              excludeSemantics: true,
+              label: '${slot.time}, $statusText',
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(

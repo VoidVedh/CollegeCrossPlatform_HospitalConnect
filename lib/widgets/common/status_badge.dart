@@ -79,38 +79,65 @@ class StatusBadge extends StatelessWidget {
     }
   }
 
+  static Color _getHighContrastDarkColor(Color c) {
+    if (c == AppColors.statusCompleted || c == AppColors.statusPaid) {
+      return const Color(0xFF81C784); // Light green (>8:1 contrast on dark surface)
+    }
+    if (c == AppColors.statusCancelled ||
+        c == AppColors.statusUnpaid ||
+        c == AppColors.error) {
+      return const Color(0xFFFF8A80); // Light coral (>7:1 contrast on dark surface)
+    }
+    if (c == AppColors.statusPending) {
+      return const Color(0xFFFFB74D); // Warm amber (>8:1 contrast on dark surface)
+    }
+    if (c == AppColors.statusUpcoming || c == AppColors.primary) {
+      return const Color(0xFF4DD0E1); // Crisp cyan (>9:1 contrast on dark surface)
+    }
+    return c;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = backgroundColor ?? color.withValues(alpha: 0.12);
+    final isDark = theme.brightness == Brightness.dark;
+    final effectiveColor = isDark ? _getHighContrastDarkColor(color) : color;
+    final bg = backgroundColor ?? effectiveColor.withValues(alpha: isDark ? 0.2 : 0.12);
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? AppSpacing.sm : AppSpacing.md,
-        vertical: compact ? AppSpacing.xxs : AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: AppRadius.roundedFull,
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: compact ? 12 : 14, color: color),
-            SizedBox(width: compact ? AppSpacing.xxs : AppSpacing.xs),
-          ],
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: compact ? 10.5 : 12,
-              letterSpacing: 0.2,
-            ),
+    return Semantics(
+      excludeSemantics: true,
+      label: 'Status: $label',
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? AppSpacing.sm : AppSpacing.md,
+          vertical: compact ? AppSpacing.xxs : AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: AppRadius.roundedFull,
+          border: Border.all(
+            color: effectiveColor.withValues(alpha: isDark ? 0.45 : 0.3),
+            width: 1,
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: compact ? 12 : 14, color: effectiveColor),
+              SizedBox(width: compact ? AppSpacing.xxs : AppSpacing.xs),
+            ],
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: effectiveColor,
+                fontWeight: FontWeight.w700,
+                fontSize: compact ? 10.5 : 12,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

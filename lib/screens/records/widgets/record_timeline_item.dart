@@ -12,10 +12,12 @@ class RecordTimelineItem extends StatelessWidget {
     super.key,
     required this.record,
     required this.isLast,
+    this.onTap,
   });
 
   final MedicalRecordModel record;
   final bool isLast;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -55,22 +57,31 @@ class RecordTimelineItem extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-            child: Card(
-              elevation: 0,
-              color: colorScheme.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: AppRadius.roundedLg,
-                side: BorderSide(color: colorScheme.outlineVariant),
-              ),
-              child: InkWell(
-                borderRadius: AppRadius.roundedLg,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => RecordDetailScreen(record: record),
-                    ),
-                  );
-                },
+            child: Semantics(
+              container: true,
+              button: true,
+              label:
+                  'Medical Record ${record.id}, ${record.diagnosis}, Doctor ${record.doctorName}, Date ${AppFormatters.formatDate(record.visitDate)}',
+              child: Card(
+                elevation: 0,
+                color: colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.roundedLg,
+                  side: BorderSide(color: colorScheme.outlineVariant),
+                ),
+                child: InkWell(
+                  borderRadius: AppRadius.roundedLg,
+                  onTap: () {
+                    if (onTap != null) {
+                      onTap!();
+                    } else {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => RecordDetailScreen(record: record),
+                        ),
+                      );
+                    }
+                  },
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
@@ -163,8 +174,11 @@ class RecordTimelineItem extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
 
                       // Footer with attachments and View button
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
                         children: [
                           if (record.attachments.isNotEmpty)
                             Container(
@@ -226,7 +240,8 @@ class RecordTimelineItem extends StatelessWidget {
             ),
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 }

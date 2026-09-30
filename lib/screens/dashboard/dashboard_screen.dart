@@ -90,8 +90,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: AppSpacing.xxl),
 
             // 5. Category Chips Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: [
                 Text(
                   'Find by Specialty',

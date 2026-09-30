@@ -69,6 +69,71 @@ class _AppShellState extends State<AppShell> {
     final unpaidCount = context.select<BillProvider, int>(
       (p) => p.unpaidBillsCount,
     );
+    final isWideScreen = MediaQuery.of(context).size.width >= 720;
+
+    if (isWideScreen) {
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: selectTab,
+              labelType: NavigationRailLabelType.all,
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Icon(
+                  Icons.local_hospital_rounded,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              destinations: [
+                const NavigationRailDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded),
+                  label: Text('Home'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.medical_services_outlined),
+                  selectedIcon: Icon(Icons.medical_services_rounded),
+                  label: Text('Doctors'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  selectedIcon: Icon(Icons.calendar_month_rounded),
+                  label: Text('Appointments'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.folder_shared_outlined),
+                  selectedIcon: Icon(Icons.folder_shared_rounded),
+                  label: Text('Records'),
+                ),
+                NavigationRailDestination(
+                  icon: Badge(
+                    isLabelVisible: unpaidCount > 0,
+                    label: Text('$unpaidCount'),
+                    child: const Icon(Icons.receipt_long_outlined),
+                  ),
+                  selectedIcon: Badge(
+                    isLabelVisible: unpaidCount > 0,
+                    label: Text('$unpaidCount'),
+                    child: const Icon(Icons.receipt_long_rounded),
+                  ),
+                  label: const Text('Bills'),
+                ),
+              ],
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _screens,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: IndexedStack(

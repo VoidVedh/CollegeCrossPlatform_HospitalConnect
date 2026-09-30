@@ -233,8 +233,11 @@ class DoctorCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
 
                 // Bottom row: Fee and Action buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,14 +259,15 @@ class DoctorCard extends StatelessWidget {
                       ],
                     ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         OutlinedButton(
                           onPressed: onTap,
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md + 2,
+                              horizontal: AppSpacing.md,
                             ),
-                            minimumSize: const Size(48, 40),
+                            minimumSize: const Size(48, 48),
                           ),
                           child: const Text('Profile'),
                         ),
@@ -275,9 +279,9 @@ class DoctorCard extends StatelessWidget {
                           },
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
+                              horizontal: AppSpacing.md + 2,
                             ),
-                            minimumSize: const Size(48, 40),
+                            minimumSize: const Size(48, 48),
                           ),
                           child: const Text('Book Visit'),
                         ),

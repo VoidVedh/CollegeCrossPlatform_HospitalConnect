@@ -54,14 +54,18 @@ class DuesSummaryBanner extends StatelessWidget {
                               : AppColors.statusCompleted,
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          hasDues ? 'OUTSTANDING DUES' : 'ALL DUES CLEARED',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: hasDues
-                                ? AppColors.primary
-                                : AppColors.statusCompleted,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
+                        Flexible(
+                          child: Text(
+                            hasDues ? 'OUTSTANDING DUES' : 'ALL DUES CLEARED',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: hasDues
+                                  ? AppColors.primary
+                                  : AppColors.statusCompleted,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ),
                       ],
@@ -105,12 +109,16 @@ class DuesSummaryBanner extends StatelessWidget {
                           color: AppColors.statusCompleted,
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          'PAID THIS MONTH',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: AppColors.statusCompleted,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
+                        Flexible(
+                          child: Text(
+                            'PAID THIS MONTH',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: AppColors.statusCompleted,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ),
                       ],

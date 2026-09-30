@@ -56,59 +56,105 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
     );
   }
 
+  String? _selectedDoctorId;
+
+  List<Widget> _buildAppBarActions(DoctorProvider doctorProvider) {
+    return [
+      IconButton(
+        icon: Icon(
+          doctorProvider.showFavoritesOnly
+              ? Icons.favorite_rounded
+              : Icons.favorite_border_rounded,
+          color: doctorProvider.showFavoritesOnly ? AppColors.error : null,
+        ),
+        tooltip: doctorProvider.showFavoritesOnly ? 'Show all' : 'Show favorites',
+        onPressed: () {
+          HapticFeedback.selectionClick();
+          doctorProvider.setShowFavoritesOnly(!doctorProvider.showFavoritesOnly);
+        },
+      ),
+      PopupMenuButton<DoctorSortOption>(
+        icon: const Icon(Icons.sort_rounded),
+        tooltip: 'Sort Doctors',
+        initialValue: doctorProvider.sortOption,
+        onSelected: (option) {
+          HapticFeedback.selectionClick();
+          doctorProvider.setSortOption(option);
+        },
+        itemBuilder: (context) => DoctorSortOption.values.map((opt) {
+          return PopupMenuItem(
+            value: opt,
+            child: Text(opt.displayName),
+          );
+        }).toList(),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final doctorProvider = context.watch<DoctorProvider>();
     final doctors = doctorProvider.filteredDoctors;
+    final isWideScreen = MediaQuery.of(context).size.width >= 840;
+
+    if (isWideScreen && _selectedDoctorId == null && doctors.isNotEmpty) {
+      _selectedDoctorId = doctors.first.id;
+    }
+
+    final listPane = Column(
+      children: [
+        _buildSearchBar(doctorProvider),
+        _buildSpecialtiesBar(doctorProvider),
+        const SizedBox(height: 8),
+        _buildResultsHeader(theme, colorScheme, doctorProvider, doctors.length),
+        Expanded(
+          child: _buildListContent(
+            context,
+            doctorProvider,
+            doctors,
+            isWideScreen: isWideScreen,
+          ),
+        ),
+      ],
+    );
+
+    if (isWideScreen) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Find Doctors'),
+          actions: _buildAppBarActions(doctorProvider),
+        ),
+        body: SafeArea(
+          child: Row(
+            children: [
+              SizedBox(width: 380, child: listPane),
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(
+                child: _selectedDoctorId != null
+                    ? DoctorDetailScreen(
+                        key: ValueKey(_selectedDoctorId),
+                        doctorId: _selectedDoctorId,
+                        isEmbedded: true,
+                      )
+                    : const Center(
+                        child: Text('Select a doctor to view profile.'),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Doctors'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              doctorProvider.showFavoritesOnly
-                  ? Icons.favorite_rounded
-                  : Icons.favorite_border_rounded,
-              color: doctorProvider.showFavoritesOnly ? AppColors.error : null,
-            ),
-            tooltip: doctorProvider.showFavoritesOnly ? 'Show all' : 'Show favorites',
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              doctorProvider.setShowFavoritesOnly(!doctorProvider.showFavoritesOnly);
-            },
-          ),
-          PopupMenuButton<DoctorSortOption>(
-            icon: const Icon(Icons.sort_rounded),
-            tooltip: 'Sort Doctors',
-            initialValue: doctorProvider.sortOption,
-            onSelected: (option) {
-              HapticFeedback.selectionClick();
-              doctorProvider.setSortOption(option);
-            },
-            itemBuilder: (context) => DoctorSortOption.values.map((opt) {
-              return PopupMenuItem(
-                value: opt,
-                child: Text(opt.displayName),
-              );
-            }).toList(),
-          ),
-        ],
+        actions: _buildAppBarActions(doctorProvider),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildSearchBar(doctorProvider),
-            _buildSpecialtiesBar(doctorProvider),
-            const SizedBox(height: 8),
-            _buildResultsHeader(theme, colorScheme, doctorProvider, doctors.length),
-            Expanded(
-              child: _buildListContent(context, doctorProvider, doctors),
-            ),
-          ],
-        ),
+        child: listPane,
       ),
     );
   }
@@ -216,8 +262,9 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
   Widget _buildListContent(
     BuildContext context,
     DoctorProvider provider,
-    List<DoctorModel> doctors,
-  ) {
+    List<DoctorModel> doctors, {
+    bool isWideScreen = false,
+  }) {
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -309,7 +356,15 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
             isFavorite: provider.isFavorite(doctor.id),
             onToggleFavorite: () => provider.toggleFavorite(doctor.id),
             nextAvailableSlot: provider.getNextAvailableSlot(doctor),
-            onTap: () => _navigateToDetail(context, doctor),
+            onTap: () {
+              if (isWideScreen) {
+                setState(() {
+                  _selectedDoctorId = doctor.id;
+                });
+              } else {
+                _navigateToDetail(context, doctor);
+              }
+            },
             onBookVisit: () => _navigateToDetail(context, doctor),
           );
         },

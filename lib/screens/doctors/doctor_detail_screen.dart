@@ -18,12 +18,14 @@ class DoctorDetailScreen extends StatelessWidget {
     super.key,
     DoctorModel? doctor,
     this.doctorId,
+    this.isEmbedded = false,
   })  : initialDoctor = doctor,
         assert(doctor != null || doctorId != null,
             'Either doctor or doctorId must be provided');
 
   final DoctorModel? initialDoctor;
   final String? doctorId;
+  final bool isEmbedded;
 
   Color _getSpecialtyColor(String specialty) {
     switch (specialty.toLowerCase()) {
@@ -72,6 +74,90 @@ class DoctorDetailScreen extends StatelessWidget {
     final DoctorModel doctor = activeDoctor;
     final specialtyColor = _getSpecialtyColor(doctor.specialty);
 
+    final content = ListView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      children: [
+        // 1. Doctor Header Card
+        _buildDoctorHeaderCard(theme, colorScheme, doctor, specialtyColor),
+        const SizedBox(height: AppSpacing.lg),
+
+        // 2. Statistics Counter Strip
+        DoctorMetricsRow(doctor: doctor),
+        const SizedBox(height: AppSpacing.xl),
+
+        // 3. About Doctor Bio
+        Text(
+          'About Doctor',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          doctor.about,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+
+        // 4. Clinic Address Card
+        DoctorClinicLocation(doctor: doctor),
+        const SizedBox(height: AppSpacing.xl),
+
+        // 5. Patient Reviews Section
+        _buildReviewsSection(context, theme, colorScheme, doctor),
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+
+    if (isEmbedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm + 2,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Doctor Profile',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  tooltip: 'Share Doctor Profile',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Doctor profile link copied for ${doctor.name}'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(child: content),
+          DoctorBookingBar(
+            doctor: doctor,
+            onBookPressed: () => _navigateToBooking(context, doctor),
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Doctor Profile'),
@@ -91,46 +177,7 @@ class DoctorDetailScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          children: [
-            // 1. Doctor Header Card
-            _buildDoctorHeaderCard(theme, colorScheme, doctor, specialtyColor),
-            const SizedBox(height: AppSpacing.lg),
-
-            // 2. Statistics Counter Strip
-            DoctorMetricsRow(doctor: doctor),
-            const SizedBox(height: AppSpacing.xl),
-
-            // 3. About Doctor Bio
-            Text(
-              'About Doctor',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              doctor.about,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // 4. Clinic Address Card
-            DoctorClinicLocation(doctor: doctor),
-            const SizedBox(height: AppSpacing.xl),
-
-            // 5. Patient Reviews Section
-            _buildReviewsSection(context, theme, colorScheme, doctor),
-            const SizedBox(height: AppSpacing.xxl),
-          ],
-        ),
+        child: content,
       ),
       bottomNavigationBar: DoctorBookingBar(
         doctor: doctor,

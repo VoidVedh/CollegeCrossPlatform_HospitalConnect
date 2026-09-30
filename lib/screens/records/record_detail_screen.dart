@@ -9,14 +9,95 @@ import 'package:hospital_connect/widgets/common/info_row.dart';
 
 /// Detailed view for a single medical record including diagnosis, clinical notes, and attachments.
 class RecordDetailScreen extends StatelessWidget {
-  const RecordDetailScreen({super.key, required this.record});
+  const RecordDetailScreen({
+    super.key,
+    required this.record,
+    this.isEmbedded = false,
+  });
 
   final MedicalRecordModel record;
+  final bool isEmbedded;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final content = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.lg,
+          ),
+          children: [
+            // 1. Record ID & Date Banner
+            _buildHeaderBanner(theme),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 2. Visit Info Card
+            _buildVisitInfoCard(theme, colorScheme),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 3. Clinical Summary / Diagnosis
+            _buildClinicalSummaryCard(theme, colorScheme),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 4. Attachments Section
+            _buildAttachmentsHeader(theme, colorScheme),
+            const SizedBox(height: AppSpacing.md),
+
+            if (record.attachments.isEmpty)
+              _buildEmptyAttachments(theme, colorScheme)
+            else
+              ...record.attachments.map(
+                (attachment) => RecordAttachmentCard(attachment: attachment),
+              ),
+            const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+    );
+
+    if (isEmbedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm + 2,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Medical Record Details',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Share Record',
+                  icon: const Icon(Icons.share_outlined),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sharing medical record ${record.id}...'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(child: content),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -37,42 +118,7 @@ class RecordDetailScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: ListView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.lg,
-              ),
-              children: [
-                // 1. Record ID & Date Banner
-                _buildHeaderBanner(theme),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 2. Visit Info Card
-                _buildVisitInfoCard(theme, colorScheme),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 3. Clinical Summary / Diagnosis
-                _buildClinicalSummaryCard(theme, colorScheme),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 4. Attachments Section
-                _buildAttachmentsHeader(theme, colorScheme),
-                const SizedBox(height: AppSpacing.md),
-
-                if (record.attachments.isEmpty)
-                  _buildEmptyAttachments(theme, colorScheme)
-                else
-                  ...record.attachments.map(
-                    (attachment) => RecordAttachmentCard(attachment: attachment),
-                  ),
-                const SizedBox(height: AppSpacing.xxl),
-              ],
-            ),
-          ),
-        ),
+        child: content,
       ),
     );
   }
@@ -185,10 +231,12 @@ class RecordDetailScreen extends StatelessWidget {
                   color: colorScheme.primary,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Clinical Summary & Observations',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                Flexible(
+                  child: Text(
+                    'Clinical Summary & Observations',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -208,10 +256,14 @@ class RecordDetailScreen extends StatelessWidget {
   }
 
   Widget _buildAttachmentsHeader(ThemeData theme, ColorScheme colorScheme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.attach_file_rounded,

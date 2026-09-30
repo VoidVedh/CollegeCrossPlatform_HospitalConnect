@@ -72,6 +72,9 @@ class DoctorAvatar extends StatelessWidget {
       );
     }
 
-    return avatar;
+    return Semantics(
+      label: 'Doctor $name avatar',
+      child: avatar,
+    );
   }
 }
