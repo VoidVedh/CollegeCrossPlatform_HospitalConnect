@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
+import 'package:hospital_connect/core/utils/safe_notifier.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 import 'package:uuid/uuid.dart';
 
 /// State management provider for invoices, itemized billing, and simulated payment gateway execution.
-class BillProvider extends ChangeNotifier {
+class BillProvider extends ChangeNotifier with SafeNotifier {
   BillProvider({
     required this.billRepository,
     required this.paymentGateway,
@@ -30,11 +32,13 @@ class BillProvider extends ChangeNotifier {
 
   /// Returns count of unpaid or pending bills for the NavigationBar badge.
   /// Cancelled and paid bills are excluded.
-  int get unpaidBillsCount =>
-      _bills.where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending).length;
+  int get unpaidBillsCount => _bills
+      .where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending)
+      .length;
 
-  List<BillModel> get unpaidBills =>
-      _bills.where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending).toList();
+  List<BillModel> get unpaidBills => _bills
+      .where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending)
+      .toList();
 
   List<BillModel> get paidBills =>
       _bills.where((b) => b.status == BillStatus.paid).toList();
@@ -59,34 +63,28 @@ class BillProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _bills = List<BillModel>.from(await billRepository.getBills());
+      final loaded = await billRepository.getBills();
+      if (isDisposed) return;
+      _bills = List<BillModel>.from(loaded);
     } catch (e) {
-      _error = 'Failed to load bills: $e';
+      if (kDebugMode) {
+        debugPrint('BillProvider loadBills error: $e');
+      }
+      _error = e is AppException
+          ? e.userFriendlyMessage
+          : 'Failed to load billing records. Please check connection and retry.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   BillModel? getBillById(String id) {
     try {
       return _bills.firstWhere((b) => b.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }
@@ -94,6 +92,7 @@ class BillProvider extends ChangeNotifier {
   /// Appends a newly created bill (e.g. consultation fee bill when booking an appointment).
   Future<BillModel> addBill(BillModel bill) async {
     final added = await billRepository.addBill(bill);
+    if (isDisposed) return added;
     _bills.insert(0, added);
     notifyListeners();
     return added;
@@ -108,6 +107,7 @@ class BillProvider extends ChangeNotifier {
       billId: billId,
       status: BillStatus.cancelled,
     );
+    if (isDisposed) return updated;
     final index = _bills.indexWhere((b) => b.id == billId);
     if (index != -1) {
       _bills[index] = updated;
@@ -127,7 +127,7 @@ class BillProvider extends ChangeNotifier {
       const result = PaymentResult(
         isSuccess: false,
         transactionId: '',
-        message: 'Bill not found.',
+        message: 'Invoice not found.',
       );
       _lastPaymentResult = result;
       return result;
@@ -147,7 +147,7 @@ class BillProvider extends ChangeNotifier {
       const result = PaymentResult(
         isSuccess: false,
         transactionId: '',
-        message: 'This invoice has already been paid.',
+        message: 'This invoice has already been settled.',
       );
       _lastPaymentResult = result;
       return result;
@@ -165,6 +165,7 @@ class BillProvider extends ChangeNotifier {
         details: details,
       );
 
+      if (isDisposed) return result;
       _lastPaymentResult = result;
 
       if (result.isSuccess) {
@@ -175,24 +176,33 @@ class BillProvider extends ChangeNotifier {
           paidAt: result.paidAt ?? DateTime.now(),
         );
 
-        final index = _bills.indexWhere((b) => b.id == billId);
-        if (index != -1) {
-          _bills[index] = updatedBill;
+        if (!isDisposed) {
+          final index = _bills.indexWhere((b) => b.id == billId);
+          if (index != -1) {
+            _bills[index] = updatedBill;
+          }
         }
       }
 
       return result;
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('BillProvider payBill error: $e');
+      }
       final fail = PaymentResult(
         isSuccess: false,
         transactionId: '',
-        message: 'Payment failed: $e',
+        message: e is AppException
+            ? e.userFriendlyMessage
+            : 'Payment transaction failed. Please retry.',
       );
       _lastPaymentResult = fail;
       return fail;
     } finally {
-      _isProcessingPayment = false;
-      notifyListeners();
+      if (!isDisposed) {
+        _isProcessingPayment = false;
+        notifyListeners();
+      }
     }
   }
 }

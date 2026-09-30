@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/app.dart';
 import 'package:hospital_connect/providers/providers.dart';
+import 'package:hospital_connect/services/booking_coordinator.dart';
 import 'package:hospital_connect/services/mock/mock_services.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,27 @@ void main() {
             billRepository: billRepository,
             paymentGateway: paymentGateway,
           ),
+        ),
+        ChangeNotifierProxyProvider3<AppointmentProvider, DoctorProvider,
+            BillProvider, BookingCoordinator>(
+          create: (ctx) => BookingCoordinator(
+            appointmentProvider: ctx.read<AppointmentProvider>(),
+            doctorProvider: ctx.read<DoctorProvider>(),
+            billProvider: ctx.read<BillProvider>(),
+          ),
+          update: (_, appointmentProvider, doctorProvider, billProvider,
+                  coordinator) =>
+              (coordinator ??
+                  BookingCoordinator(
+                    appointmentProvider: appointmentProvider,
+                    doctorProvider: doctorProvider,
+                    billProvider: billProvider,
+                  ))
+                ..update(
+                  appointmentProvider: appointmentProvider,
+                  doctorProvider: doctorProvider,
+                  billProvider: billProvider,
+                ),
         ),
       ],
       child: const HospitalConnectApp(),

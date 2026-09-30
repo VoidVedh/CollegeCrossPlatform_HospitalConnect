@@ -5,10 +5,21 @@ import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/screens/appointments/booking_screen.dart';
 
 /// Doctor Detail view presenting bio, experience, reviews, clinic address, and fees.
-class DoctorDetailScreen extends StatelessWidget {
-  const DoctorDetailScreen({super.key, required this.doctor});
+import 'package:hospital_connect/providers/doctor_provider.dart';
+import 'package:provider/provider.dart';
 
-  final DoctorModel doctor;
+/// Doctor Detail view presenting bio, experience, reviews, clinic address, and fees.
+class DoctorDetailScreen extends StatelessWidget {
+  const DoctorDetailScreen({
+    super.key,
+    DoctorModel? doctor,
+    this.doctorId,
+  })  : initialDoctor = doctor,
+        assert(doctor != null || doctorId != null,
+            'Either doctor or doctorId must be provided');
+
+  final DoctorModel? initialDoctor;
+  final String? doctorId;
 
   Color _getSpecialtyColor(String specialty) {
     switch (specialty.toLowerCase()) {
@@ -26,10 +37,10 @@ class DoctorDetailScreen extends StatelessWidget {
     }
   }
 
-  void _navigateToBooking(BuildContext context) {
+  void _navigateToBooking(BuildContext context, DoctorModel activeDoctor) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => BookingScreen(doctor: doctor),
+        builder: (_) => BookingScreen(doctor: activeDoctor),
         settings: const RouteSettings(name: '/booking'),
       ),
     );
@@ -39,6 +50,23 @@ class DoctorDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final doctorProvider = context.watch<DoctorProvider>();
+    final activeDoctor = (doctorId != null
+            ? doctorProvider.getDoctorById(doctorId!)
+            : null) ??
+        initialDoctor ??
+        (initialDoctor != null
+            ? doctorProvider.getDoctorById(initialDoctor!.id)
+            : null);
+
+    if (activeDoctor == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Doctor Profile')),
+        body: const Center(child: Text('Doctor details not found.')),
+      );
+    }
+    final DoctorModel doctor = activeDoctor;
+
     final specialtyColor = _getSpecialtyColor(doctor.specialty);
     final initials = doctor.name
         .split(' ')
@@ -336,7 +364,7 @@ class DoctorDetailScreen extends StatelessWidget {
                 ],
               ),
               FilledButton.icon(
-                onPressed: () => _navigateToBooking(context),
+                onPressed: () => _navigateToBooking(context, doctor),
                 icon: const Icon(Icons.calendar_month_rounded),
                 label: const Text('Book Appointment'),
                 style: FilledButton.styleFrom(

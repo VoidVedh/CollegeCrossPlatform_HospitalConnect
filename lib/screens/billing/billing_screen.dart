@@ -484,7 +484,7 @@ class _BillPaymentSummarySheet extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => PaymentScreen(bill: bill),
+                    builder: (_) => PaymentScreen(billId: bill.id),
                   ),
                 );
               },

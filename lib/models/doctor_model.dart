@@ -19,6 +19,29 @@ class DoctorModel {
     required this.reviews,
   });
 
+  factory DoctorModel.fromJson(Map<String, dynamic> json) {
+    return DoctorModel(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      specialty: json['specialty'] as String,
+      rating: (json['rating'] as num).toDouble(),
+      experienceYears: (json['experienceYears'] as num).toInt(),
+      hospitalName: json['hospitalName'] as String,
+      clinicAddress: json['clinicAddress'] as String,
+      consultationFee: (json['consultationFee'] as num).toDouble(),
+      availableSlots: (json['availableSlots'] as List<dynamic>?)
+              ?.map((slot) => DateTime.parse(slot as String))
+              .toList() ??
+          <DateTime>[],
+      imageUrl: (json['imageUrl'] as String?) ?? '',
+      about: json['about'] as String,
+      reviews: (json['reviews'] as List<dynamic>?)
+              ?.map((r) => ReviewModel.fromJson(r as Map<String, dynamic>))
+              .toList() ??
+          <ReviewModel>[],
+    );
+  }
+
   final String id;
   final String name;
   final String specialty;
@@ -31,6 +54,24 @@ class DoctorModel {
   final String imageUrl;
   final String about;
   final List<ReviewModel> reviews;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'specialty': specialty,
+      'rating': rating,
+      'experienceYears': experienceYears,
+      'hospitalName': hospitalName,
+      'clinicAddress': clinicAddress,
+      'consultationFee': consultationFee,
+      'availableSlots':
+          availableSlots.map((s) => s.toIso8601String()).toList(),
+      'imageUrl': imageUrl,
+      'about': about,
+      'reviews': reviews.map((r) => r.toJson()).toList(),
+    };
+  }
 
   DoctorModel copyWith({
     String? id,
@@ -67,8 +108,32 @@ class DoctorModel {
       identical(this, other) ||
       other is DoctorModel &&
           runtimeType == other.runtimeType &&
-          id == other.id;
+          id == other.id &&
+          name == other.name &&
+          specialty == other.specialty &&
+          rating == other.rating &&
+          experienceYears == other.experienceYears &&
+          hospitalName == other.hospitalName &&
+          clinicAddress == other.clinicAddress &&
+          consultationFee == other.consultationFee &&
+          listEquals(availableSlots, other.availableSlots) &&
+          imageUrl == other.imageUrl &&
+          about == other.about &&
+          listEquals(reviews, other.reviews);
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(
+        id,
+        name,
+        specialty,
+        rating,
+        experienceYears,
+        hospitalName,
+        clinicAddress,
+        consultationFee,
+        Object.hashAll(availableSlots),
+        imageUrl,
+        about,
+        Object.hashAll(reviews),
+      );
 }

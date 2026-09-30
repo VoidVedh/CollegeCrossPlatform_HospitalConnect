@@ -167,7 +167,11 @@ void main() {
       final gateway = _AuditPaymentGateway();
 
       final docProvider = DoctorProvider(docRepo);
-      final aptProvider = AppointmentProvider(aptRepo);
+      final aptProvider = AppointmentProvider(
+        aptRepo,
+        doctorRepository: docRepo,
+        billRepository: billRepo,
+      );
       final billProvider =
           BillProvider(billRepository: billRepo, paymentGateway: gateway);
       final recordProvider = MedicalRecordProvider(recordRepo);
@@ -253,11 +257,15 @@ void main() {
       });
 
       final doctor = (await _AuditDoctorRepo().getDoctors()).first;
+      final docProvider = DoctorProvider(_AuditDoctorRepo());
 
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.light(useGoogleFonts: false),
-          home: DoctorDetailScreen(doctor: doctor),
+        ChangeNotifierProvider<DoctorProvider>.value(
+          value: docProvider,
+          child: MaterialApp(
+            theme: AppTheme.light(useGoogleFonts: false),
+            home: DoctorDetailScreen(doctor: doctor),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -266,6 +274,8 @@ void main() {
       expect(find.text('Neurology'), findsOneWidget);
       expect(find.text('16+ Yrs'), findsOneWidget);
       expect(find.text('Book Appointment'), findsOneWidget);
+
+      docProvider.dispose();
     });
   });
 }

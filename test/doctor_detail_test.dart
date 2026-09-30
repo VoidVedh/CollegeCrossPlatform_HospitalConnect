@@ -4,6 +4,8 @@ import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/screens/appointments/booking_screen.dart';
 import 'package:hospital_connect/screens/doctors/doctor_detail_screen.dart';
 
+import 'helpers/pump_app.dart';
+
 void main() {
   testWidgets('DoctorDetailScreen renders biography, reviews, and booking entrance',
       (WidgetTester tester) async {
@@ -34,10 +36,9 @@ void main() {
       ],
     );
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: DoctorDetailScreen(doctor: doctor),
-      ),
+    await pumpHospitalApp(
+      tester,
+      home: DoctorDetailScreen(doctor: doctor),
     );
     await tester.pumpAndSettle();
 

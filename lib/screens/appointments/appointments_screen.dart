@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/appointment_provider.dart';
-import 'package:hospital_connect/providers/doctor_provider.dart';
+import 'package:hospital_connect/screens/app_shell.dart';
+import 'package:hospital_connect/services/booking_coordinator.dart';
 import 'package:provider/provider.dart';
 
 /// Comprehensive Appointments management screen featuring Upcoming, Completed, and Cancelled tabs.
@@ -70,14 +72,15 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
 
     if (confirmed == true && context.mounted) {
       try {
-        await context
-            .read<AppointmentProvider>()
-            .cancelAppointment(appointment.id);
-        try {
-          if (context.mounted) {
-            context.read<DoctorProvider>().loadDoctors();
-          }
-        } catch (_) {}
+        final coordinator = context.read<BookingCoordinator?>();
+        if (coordinator != null) {
+          await coordinator.cancelAppointment(appointment.id);
+        } else {
+          await context
+              .read<AppointmentProvider>()
+              .cancelAppointment(appointment.id);
+        }
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -91,9 +94,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
         }
       } catch (e) {
         if (context.mounted) {
+          final message = e is AppException
+              ? e.userFriendlyMessage
+              : 'Failed to cancel appointment. Please try again.';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to cancel appointment: $e'),
+              content: Text(message),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -416,7 +422,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
                 child: OutlinedButton.icon(
                   onPressed: () {
                     // Navigate to Doctors tab
-                    Navigator.of(context).pushNamed('/doctors');
+                    AppShell.selectTab(context, 1);
                   },
                   icon: const Icon(Icons.history_rounded, size: 18),
                   label: const Text('Book Follow-up Consultation'),
@@ -428,7 +434,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
                 height: 44,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    Navigator.of(context).pushNamed('/doctors');
+                    AppShell.selectTab(context, 1);
                   },
                   icon: const Icon(Icons.restart_alt_rounded, size: 18),
                   label: const Text('Re-book Consultation'),
@@ -549,7 +555,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
               FilledButton.icon(
                 key: const Key('book_appointment_empty_cta'),
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/doctors');
+                  AppShell.selectTab(context, 1);
                 },
                 icon: const Icon(Icons.add_rounded, size: 18),
                 label: const Text('Book an Appointment'),

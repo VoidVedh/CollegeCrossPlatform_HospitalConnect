@@ -2,24 +2,25 @@ import 'package:flutter/foundation.dart';
 import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/core/utils/bill_calculator.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
+import 'package:hospital_connect/core/utils/safe_notifier.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/bill_provider.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 import 'package:uuid/uuid.dart';
 
 /// State management provider for patient appointments and bookings.
-class AppointmentProvider extends ChangeNotifier {
+class AppointmentProvider extends ChangeNotifier with SafeNotifier {
   AppointmentProvider(
-    this._repository, {
-    this.doctorRepository,
-    this.billRepository,
-  }) {
+    AppointmentRepository repository, {
+    required this.doctorRepository,
+    required this.billRepository,
+  }) : _repository = repository {
     loadAppointments();
   }
 
   final AppointmentRepository _repository;
-  final DoctorRepository? doctorRepository;
-  final BillRepository? billRepository;
+  final DoctorRepository doctorRepository;
+  final BillRepository billRepository;
   static const Uuid _uuid = Uuid();
 
   List<AppointmentModel> _appointments = <AppointmentModel>[];
@@ -70,13 +71,21 @@ class AppointmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _appointments =
-          List<AppointmentModel>.from(await _repository.getAppointments());
+      final loaded = await _repository.getAppointments();
+      if (isDisposed) return;
+      _appointments = List<AppointmentModel>.from(loaded);
     } catch (e) {
-      _error = 'Failed to load appointments: $e';
+      if (kDebugMode) {
+        debugPrint('AppointmentProvider loadAppointments error: $e');
+      }
+      _error = e is AppException
+          ? e.userFriendlyMessage
+          : 'Failed to load appointments list. Please retry.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -130,17 +139,16 @@ class AppointmentProvider extends ChangeNotifier {
 
     try {
       // Step 1: Mark slot in doctor repository
-      if (doctorRepository != null) {
-        await doctorRepository!.markSlotAvailability(
-          doctorId: doctorId,
-          slot: slotDateTime,
-          isAvailable: false,
-        );
-        slotMarked = true;
-      }
+      await doctorRepository.markSlotAvailability(
+        doctorId: doctorId,
+        slot: slotDateTime,
+        isAvailable: false,
+      );
+      slotMarked = true;
 
       // Step 2: Book appointment in repository
-      final appointmentId = generateUniqueAppointmentId(_appointments.map((a) => a.id));
+      final appointmentId =
+          generateUniqueAppointmentId(_appointments.map((a) => a.id));
       final newAppointment = AppointmentModel(
         id: appointmentId,
         doctorId: doctorId,
@@ -156,52 +164,67 @@ class AppointmentProvider extends ChangeNotifier {
       );
 
       bookedAppointment = await _repository.bookAppointment(newAppointment);
-      _appointments.insert(0, bookedAppointment);
+      if (!isDisposed) {
+        _appointments.insert(0, bookedAppointment);
+      }
 
       // Step 3: Automatically generate linked consultation invoice
-      if (billRepository != null) {
-        final existingBills = await billRepository!.getBills();
-        final billId = BillProvider.generateUniqueBillId(existingBills.map((b) => b.id));
-        final newBill = BillCalculator.createConsultationBill(
-          id: billId,
-          appointmentId: appointmentId,
-          billDate: appointmentDate,
-          doctorName: doctorName,
-          doctorSpecialty: doctorSpecialty,
-          consultationFee: consultationFee,
-        );
-        createdBill = await billRepository!.addBill(newBill);
-      }
+      final existingBills = await billRepository.getBills();
+      final billId =
+          BillProvider.generateUniqueBillId(existingBills.map((b) => b.id));
+      final newBill = BillCalculator.createConsultationBill(
+        id: billId,
+        appointmentId: appointmentId,
+        billDate: appointmentDate,
+        doctorName: doctorName,
+        doctorSpecialty: doctorSpecialty,
+        consultationFee: consultationFee,
+      );
+      createdBill = await billRepository.addBill(newBill);
 
       return bookedAppointment;
     } catch (e) {
       // Transactional Rollback
-      if (createdBill != null && billRepository != null) {
+      if (createdBill != null) {
         try {
-          await billRepository!.removeBill(createdBill.id);
-        } catch (_) {}
+          await billRepository.removeBill(createdBill.id);
+        } catch (rollbackError) {
+          if (kDebugMode) {
+            debugPrint('Rollback error removing bill: $rollbackError');
+          }
+        }
       }
       if (bookedAppointment != null) {
         _appointments.removeWhere((a) => a.id == bookedAppointment!.id);
         try {
           await _repository.deleteAppointment(bookedAppointment.id);
-        } catch (_) {}
+        } catch (rollbackError) {
+          if (kDebugMode) {
+            debugPrint('Rollback error deleting appointment: $rollbackError');
+          }
+        }
       }
-      if (slotMarked && doctorRepository != null) {
+      if (slotMarked) {
         try {
-          await doctorRepository!.markSlotAvailability(
+          await doctorRepository.markSlotAvailability(
             doctorId: doctorId,
             slot: slotDateTime,
             isAvailable: true,
           );
-        } catch (_) {}
+        } catch (rollbackError) {
+          if (kDebugMode) {
+            debugPrint('Rollback error releasing slot: $rollbackError');
+          }
+        }
       }
 
-      _error = e is AppException ? e.message : 'Booking failed: $e';
+      _error = e is AppException ? e.userFriendlyMessage : 'Booking failed: $e';
       rethrow;
     } finally {
-      _isBooking = false;
-      notifyListeners();
+      if (!isDisposed) {
+        _isBooking = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -213,46 +236,46 @@ class AppointmentProvider extends ChangeNotifier {
 
     try {
       final cancelled = await _repository.cancelAppointment(appointmentId);
-      final index = _appointments.indexWhere((a) => a.id == appointmentId);
-      if (index != -1) {
-        _appointments[index] = cancelled;
-      }
-
-      // Free slot in doctor repository
-      if (doctorRepository != null) {
-        final slotDateTime = AppFormatters.tryParseTimeSlot(
-          cancelled.appointmentDate,
-          cancelled.timeSlot,
-        );
-        if (slotDateTime != null) {
-          await doctorRepository!.markSlotAvailability(
-            doctorId: cancelled.doctorId,
-            slot: slotDateTime,
-            isAvailable: true,
-          );
+      if (!isDisposed) {
+        final index = _appointments.indexWhere((a) => a.id == appointmentId);
+        if (index != -1) {
+          _appointments[index] = cancelled;
         }
       }
 
+      // Free slot in doctor repository
+      final slotDateTime = AppFormatters.tryParseTimeSlot(
+        cancelled.appointmentDate,
+        cancelled.timeSlot,
+      );
+      if (slotDateTime != null) {
+        await doctorRepository.markSlotAvailability(
+          doctorId: cancelled.doctorId,
+          slot: slotDateTime,
+          isAvailable: true,
+        );
+      }
+
       // Requirement 2: Void or cancel linked unpaid/pending bills
-      if (billRepository != null) {
-        final bills = await billRepository!.getBills();
-        for (final b in bills) {
-          if (b.appointmentId == appointmentId && b.status != BillStatus.paid) {
-            await billRepository!.updateBillStatus(
-              billId: b.id,
-              status: BillStatus.cancelled,
-            );
-          }
+      final bills = await billRepository.getBills();
+      for (final b in bills) {
+        if (b.appointmentId == appointmentId && b.status != BillStatus.paid) {
+          await billRepository.updateBillStatus(
+            billId: b.id,
+            status: BillStatus.cancelled,
+          );
         }
       }
 
       return cancelled;
     } catch (e) {
-      _error = e is AppException ? e.message : 'Cancellation failed: $e';
+      _error = e is AppException ? e.userFriendlyMessage : 'Cancellation failed: $e';
       rethrow;
     } finally {
-      _isCancelling = false;
-      notifyListeners();
+      if (!isDisposed) {
+        _isCancelling = false;
+        notifyListeners();
+      }
     }
   }
 }

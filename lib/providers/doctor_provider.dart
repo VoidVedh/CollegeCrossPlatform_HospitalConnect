@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
+import 'package:hospital_connect/core/utils/safe_notifier.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 
 /// State management provider for Doctor catalog, filtering, and slot availability.
-class DoctorProvider extends ChangeNotifier {
+class DoctorProvider extends ChangeNotifier with SafeNotifier {
   DoctorProvider(this._repository) {
     loadDoctors();
   }
@@ -36,7 +38,7 @@ class DoctorProvider extends ChangeNotifier {
     }).toList();
   }
 
-  /// Returns top-rated doctors for the dashboard carousel (rating >= 4.8).
+  /// Returns up to 5 highest-rated doctors sorted descending by rating.
   List<DoctorModel> get topRatedDoctors {
     final sorted = List<DoctorModel>.from(_doctors)
       ..sort((a, b) => b.rating.compareTo(a.rating));
@@ -49,12 +51,21 @@ class DoctorProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _doctors = await _repository.getDoctors();
+      final loaded = await _repository.getDoctors();
+      if (isDisposed) return;
+      _doctors = loaded;
     } catch (e) {
-      _error = 'Failed to load doctors: $e';
+      if (kDebugMode) {
+        debugPrint('DoctorProvider loadDoctors error: $e');
+      }
+      _error = e is AppException
+          ? e.userFriendlyMessage
+          : 'Failed to load doctors list. Please check your connection and retry.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -73,7 +84,7 @@ class DoctorProvider extends ChangeNotifier {
   DoctorModel? getDoctorById(String id) {
     try {
       return _doctors.firstWhere((d) => d.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }
@@ -85,6 +96,7 @@ class DoctorProvider extends ChangeNotifier {
       slot: slot,
       isAvailable: false,
     );
+    if (isDisposed) return;
     final index = _doctors.indexWhere((d) => d.id == doctorId);
     if (index != -1) {
       final updatedSlots = List<DateTime>.from(_doctors[index].availableSlots)
@@ -101,6 +113,7 @@ class DoctorProvider extends ChangeNotifier {
       slot: slot,
       isAvailable: true,
     );
+    if (isDisposed) return;
     final index = _doctors.indexWhere((d) => d.id == doctorId);
     if (index != -1) {
       final updatedSlots = List<DateTime>.from(_doctors[index].availableSlots);

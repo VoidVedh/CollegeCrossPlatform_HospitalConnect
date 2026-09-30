@@ -8,8 +8,22 @@ class RecordAttachmentModel {
     required this.fileType,
   });
 
+  factory RecordAttachmentModel.fromJson(Map<String, dynamic> json) {
+    return RecordAttachmentModel(
+      fileName: json['fileName'] as String,
+      fileType: json['fileType'] as String,
+    );
+  }
+
   final String fileName;
   final String fileType;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fileName': fileName,
+      'fileType': fileType,
+    };
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -36,6 +50,22 @@ class MedicalRecordModel {
     required this.attachments,
   });
 
+  factory MedicalRecordModel.fromJson(Map<String, dynamic> json) {
+    return MedicalRecordModel(
+      id: json['id'] as String,
+      diagnosis: json['diagnosis'] as String,
+      doctorName: json['doctorName'] as String,
+      visitDate: DateTime.parse(json['visitDate'] as String),
+      hospitalName: json['hospitalName'] as String,
+      summary: json['summary'] as String,
+      attachments: (json['attachments'] as List<dynamic>?)
+              ?.map(
+                  (a) => RecordAttachmentModel.fromJson(a as Map<String, dynamic>))
+              .toList() ??
+          <RecordAttachmentModel>[],
+    );
+  }
+
   final String id;
   final String diagnosis;
   final String doctorName;
@@ -43,6 +73,18 @@ class MedicalRecordModel {
   final String hospitalName;
   final String summary;
   final List<RecordAttachmentModel> attachments;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'diagnosis': diagnosis,
+      'doctorName': doctorName,
+      'visitDate': visitDate.toIso8601String(),
+      'hospitalName': hospitalName,
+      'summary': summary,
+      'attachments': attachments.map((a) => a.toJson()).toList(),
+    };
+  }
 
   MedicalRecordModel copyWith({
     String? id,
@@ -69,8 +111,22 @@ class MedicalRecordModel {
       identical(this, other) ||
       other is MedicalRecordModel &&
           runtimeType == other.runtimeType &&
-          id == other.id;
+          id == other.id &&
+          diagnosis == other.diagnosis &&
+          doctorName == other.doctorName &&
+          visitDate == other.visitDate &&
+          hospitalName == other.hospitalName &&
+          summary == other.summary &&
+          listEquals(attachments, other.attachments);
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(
+        id,
+        diagnosis,
+        doctorName,
+        visitDate,
+        hospitalName,
+        summary,
+        Object.hashAll(attachments),
+      );
 }

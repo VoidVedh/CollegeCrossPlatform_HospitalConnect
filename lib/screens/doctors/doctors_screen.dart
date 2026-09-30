@@ -58,7 +58,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
   void _navigateToDetail(BuildContext context, DoctorModel doctor) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => DoctorDetailScreen(doctor: doctor),
+        builder: (_) => DoctorDetailScreen(doctorId: doctor.id),
         settings: const RouteSettings(name: '/doctor-detail'),
       ),
     );

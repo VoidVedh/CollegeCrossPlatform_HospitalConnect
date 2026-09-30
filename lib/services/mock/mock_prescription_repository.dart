@@ -20,7 +20,7 @@ class MockPrescriptionRepository implements PrescriptionRepository {
     await Future.delayed(_delay);
     try {
       return _dataSource.prescriptions.firstWhere((p) => p.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }

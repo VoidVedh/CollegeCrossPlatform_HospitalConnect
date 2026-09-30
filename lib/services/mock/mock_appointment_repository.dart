@@ -1,3 +1,4 @@
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/models/appointment_model.dart';
 import 'package:hospital_connect/models/enums.dart';
 import 'package:hospital_connect/services/mock/mock_data_service.dart';
@@ -21,7 +22,7 @@ class MockAppointmentRepository implements AppointmentRepository {
     await Future.delayed(_delay);
     try {
       return _dataSource.appointments.firstWhere((a) => a.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }
@@ -36,14 +37,21 @@ class MockAppointmentRepository implements AppointmentRepository {
   @override
   Future<AppointmentModel> cancelAppointment(String id) async {
     await Future.delayed(_delay);
+    final exists = _dataSource.appointments.any((a) => a.id == id);
+    if (!exists) {
+      throw NotFoundException('Appointment with ID $id was not found.');
+    }
     _dataSource.updateAppointmentStatus(id, AppointmentStatus.cancelled);
-    final updated = _dataSource.appointments.firstWhere((a) => a.id == id);
-    return updated;
+    return _dataSource.appointments.firstWhere((a) => a.id == id);
   }
 
   @override
   Future<bool> deleteAppointment(String id) async {
     await Future.delayed(_delay);
+    final exists = _dataSource.appointments.any((a) => a.id == id);
+    if (!exists) {
+      return false;
+    }
     _dataSource.deleteAppointment(id);
     return true;
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
+import 'package:hospital_connect/core/utils/safe_notifier.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 
 /// State management provider for patient prescriptions.
-class PrescriptionProvider extends ChangeNotifier {
+class PrescriptionProvider extends ChangeNotifier with SafeNotifier {
   PrescriptionProvider(this._repository) {
     loadPrescriptions();
   }
@@ -25,36 +27,28 @@ class PrescriptionProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _prescriptions = List<PrescriptionModel>.from(
-        await _repository.getPrescriptions(),
-      );
+      final loaded = await _repository.getPrescriptions();
+      if (isDisposed) return;
+      _prescriptions = List<PrescriptionModel>.from(loaded);
     } catch (e) {
-      _error = 'Failed to load prescriptions: $e';
+      if (kDebugMode) {
+        debugPrint('PrescriptionProvider loadPrescriptions error: $e');
+      }
+      _error = e is AppException
+          ? e.userFriendlyMessage
+          : 'Failed to load prescriptions. Please retry.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   PrescriptionModel? getPrescriptionById(String id) {
     try {
       return _prescriptions.firstWhere((p) => p.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }

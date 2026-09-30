@@ -20,7 +20,7 @@ class MockMedicalRecordRepository implements MedicalRecordRepository {
     await Future.delayed(_delay);
     try {
       return _dataSource.medicalRecords.firstWhere((r) => r.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }

@@ -1,3 +1,4 @@
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/models/bill_model.dart';
 import 'package:hospital_connect/models/enums.dart';
 import 'package:hospital_connect/services/mock/mock_data_service.dart';
@@ -21,7 +22,7 @@ class MockBillRepository implements BillRepository {
     await Future.delayed(_delay);
     try {
       return _dataSource.bills.firstWhere((b) => b.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }
@@ -41,19 +42,26 @@ class MockBillRepository implements BillRepository {
     DateTime? paidAt,
   }) async {
     await Future.delayed(_delay);
+    final exists = _dataSource.bills.any((b) => b.id == billId);
+    if (!exists) {
+      throw NotFoundException('Bill with ID $billId was not found.');
+    }
     _dataSource.updateBill(
       billId,
       status,
       paymentMethod: paymentMethod,
       paidAt: paidAt,
     );
-    final updated = _dataSource.bills.firstWhere((b) => b.id == billId);
-    return updated;
+    return _dataSource.bills.firstWhere((b) => b.id == billId);
   }
 
   @override
   Future<bool> removeBill(String id) async {
     await Future.delayed(_delay);
+    final exists = _dataSource.bills.any((b) => b.id == id);
+    if (!exists) {
+      return false;
+    }
     _dataSource.removeBill(id);
     return true;
   }

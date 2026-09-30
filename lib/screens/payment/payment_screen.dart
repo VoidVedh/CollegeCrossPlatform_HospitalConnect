@@ -13,11 +13,13 @@ import 'package:provider/provider.dart';
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({
     super.key,
-    required this.bill,
+    this.bill,
+    this.billId,
     this.onPaymentSuccess,
-  });
+  }) : assert(bill != null || billId != null, 'Either bill or billId must be provided');
 
-  final BillModel bill;
+  final BillModel? bill;
+  final String? billId;
   final VoidCallback? onPaymentSuccess;
 
   @override
@@ -113,9 +115,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _processPaymentExecution(details);
   }
 
-  Future<void> _processPaymentExecution(Map<String, String> details) async {
-    // In Step 17 this validates inputs and performs payment through BillProvider
+  BillModel? _resolveBill(BuildContext context) {
     final provider = context.read<BillProvider>();
+    final targetId = widget.billId ?? widget.bill?.id;
+    if (targetId != null) {
+      final fromProvider = provider.getBillById(targetId);
+      if (fromProvider != null) return fromProvider;
+    }
+    return widget.bill;
+  }
+
+  Future<void> _processPaymentExecution(Map<String, String> details) async {
+    final provider = context.read<BillProvider>();
+    final bill = _resolveBill(context);
+    if (bill == null) return;
 
     // Show processing indicator dialog
     showDialog<void>(
@@ -143,7 +156,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Processing secure transaction of ${AppFormatters.formatCurrency(widget.bill.totalAmount)}',
+                    'Processing secure transaction of ${AppFormatters.formatCurrency(bill.totalAmount)}',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -158,7 +171,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
 
     final result = await provider.payBill(
-      billId: widget.bill.id,
+      billId: bill.id,
       method: _selectedMethod,
       details: details,
     );
@@ -181,6 +194,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _showPaymentSuccessModal(PaymentResult result) {
+    final bill = _resolveBill(context) ?? widget.bill!;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -253,19 +267,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     const Divider(height: 16),
                     _receiptRow(
                       'Invoice ID',
-                      widget.bill.id,
+                      bill.id,
                       theme,
                     ),
                     const SizedBox(height: 8),
                     _receiptRow(
                       'Service',
-                      widget.bill.serviceName,
+                      bill.serviceName,
                       theme,
                     ),
                     const SizedBox(height: 8),
                     _receiptRow(
                       'Amount Paid',
-                      AppFormatters.formatCurrency(widget.bill.totalAmount),
+                      AppFormatters.formatCurrency(bill.totalAmount),
                       theme,
                       isPrimary: true,
                     ),
@@ -295,8 +309,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   onPressed: () {
                     final updatedBill = context
                             .read<BillProvider>()
-                            .getBillById(widget.bill.id) ??
-                        widget.bill;
+                            .getBillById(bill.id) ??
+                        bill;
                     PaymentReceiptDialog.show(
                       sheetContext,
                       bill: updatedBill,
@@ -364,6 +378,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final billProvider = context.watch<BillProvider>();
+    final targetId = widget.billId ?? widget.bill?.id;
+    final activeBill = targetId != null ? billProvider.getBillById(targetId) : null;
+    final bill = activeBill ?? widget.bill;
+
+    if (bill == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Payment Gateway')),
+        body: const Center(child: Text('Invoice details not found.')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -377,7 +402,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               children: [
                 // 1. Bill Summary Card
-                _buildBillSummaryCard(theme, colorScheme),
+                _buildBillSummaryCard(theme, colorScheme, bill),
                 const SizedBox(height: 20),
 
                 // 2. Payment Method Selector Tabs
@@ -411,7 +436,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     onPressed: _handlePay,
                     icon: const Icon(Icons.lock_rounded, size: 20),
                     label: Text(
-                      'Pay ${AppFormatters.formatCurrency(widget.bill.totalAmount)} Securely',
+                      'Pay ${AppFormatters.formatCurrency(bill.totalAmount)} Securely',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -428,7 +453,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildBillSummaryCard(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildBillSummaryCard(ThemeData theme, ColorScheme colorScheme, BillModel bill) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -464,7 +489,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  widget.bill.id,
+                  bill.id,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -475,7 +500,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            widget.bill.serviceName,
+            bill.serviceName,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -485,13 +510,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Date: ${AppFormatters.formatDate(widget.bill.billDate)}',
+                'Date: ${AppFormatters.formatDate(bill.billDate)}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
               Text(
-                AppFormatters.formatCurrency(widget.bill.totalAmount),
+                AppFormatters.formatCurrency(bill.totalAmount),
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AppColors.primary,

@@ -138,22 +138,7 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    final doctor = DoctorModel(
-      id: 'DOC-99',
-      name: 'Dr. Testing Specialist',
-      specialty: 'Pediatrics',
-      rating: 4.9,
-      experienceYears: 10,
-      hospitalName: 'Apollo Hospital',
-      clinicAddress: 'Bannerghatta Road, Bengaluru',
-      consultationFee: 600.0,
-      imageUrl: '',
-      about: 'Pediatric specialist testing bio',
-      availableSlots: [
-        DateTime.now().add(const Duration(days: 1)),
-      ],
-      reviews: const [],
-    );
+    final doctor = mockData.doctors.first;
 
     await tester.pumpWidget(
       MultiProvider(
@@ -205,13 +190,19 @@ void main() {
 
     // Verify dialog content
     expect(find.text('Confirm Appointment'), findsOneWidget);
-    expect(find.text('Dr. Testing Specialist'), findsOneWidget);
+    expect(find.text(doctor.name), findsOneWidget);
     expect(find.text('Aarav Gupta (6 yrs)'), findsOneWidget);
-    expect(find.text('₹600'), findsWidgets); // consultation fee
+    expect(find.text('₹${doctor.consultationFee.round()}'), findsWidgets); // consultation fee
 
     // Tap confirm button
     await tester.tap(find.byKey(const Key('confirm_booking_dialog_button')));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    for (int i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find.text('Appointment Confirmed!').evaluate().isNotEmpty) {
+        break;
+      }
+    }
     await tester.pumpAndSettle();
 
     // Verify Success Modal appears with generated APT- ID

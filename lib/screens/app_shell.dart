@@ -13,6 +13,16 @@ class AppShell extends StatefulWidget {
 
   final int initialIndex;
 
+  /// Programmatically switch the active tab in the nearest [AppShell].
+  static bool selectTab(BuildContext context, int index) {
+    final state = context.findAncestorStateOfType<_AppShellState>();
+    if (state != null) {
+      state.selectTab(index);
+      return true;
+    }
+    return false;
+  }
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -21,7 +31,7 @@ class _AppShellState extends State<AppShell> {
   late int _currentIndex;
 
   late final List<Widget> _screens = <Widget>[
-    DashboardScreen(onSelectTab: _onTabSelected),
+    DashboardScreen(onSelectTab: selectTab),
     const DoctorsScreen(),
     const AppointmentsScreen(),
     const RecordsScreen(),
@@ -34,8 +44,8 @@ class _AppShellState extends State<AppShell> {
     _currentIndex = widget.initialIndex;
   }
 
-  void _onTabSelected(int index) {
-    if (_currentIndex != index) {
+  void selectTab(int index) {
+    if (_currentIndex != index && mounted) {
       setState(() {
         _currentIndex = index;
       });
@@ -55,7 +65,7 @@ class _AppShellState extends State<AppShell> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: _onTabSelected,
+        onDestinationSelected: selectTab,
         destinations: <NavigationDestination>[
           const NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),

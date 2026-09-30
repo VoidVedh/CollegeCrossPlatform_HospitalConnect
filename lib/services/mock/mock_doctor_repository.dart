@@ -1,3 +1,4 @@
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/models/doctor_model.dart';
 import 'package:hospital_connect/services/mock/mock_data_service.dart';
 import 'package:hospital_connect/services/repositories/doctor_repository.dart';
@@ -20,7 +21,7 @@ class MockDoctorRepository implements DoctorRepository {
     await Future.delayed(_delay);
     try {
       return _dataSource.doctors.firstWhere((d) => d.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }
@@ -50,6 +51,10 @@ class MockDoctorRepository implements DoctorRepository {
     required bool isAvailable,
   }) async {
     await Future.delayed(_delay);
+    final exists = _dataSource.doctors.any((d) => d.id == doctorId);
+    if (!exists) {
+      throw NotFoundException('Doctor with ID $doctorId was not found.');
+    }
     _dataSource.updateDoctorSlotAvailability(doctorId, slot, isAvailable);
     return true;
   }

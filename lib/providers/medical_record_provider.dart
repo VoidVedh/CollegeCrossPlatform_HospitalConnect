@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
+import 'package:hospital_connect/core/utils/safe_notifier.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
 
 /// State management provider for patient medical visit history.
-class MedicalRecordProvider extends ChangeNotifier {
+class MedicalRecordProvider extends ChangeNotifier with SafeNotifier {
   MedicalRecordProvider(this._repository) {
     loadRecords();
   }
@@ -24,35 +26,28 @@ class MedicalRecordProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _records =
-          List<MedicalRecordModel>.from(await _repository.getMedicalRecords());
+      final loaded = await _repository.getMedicalRecords();
+      if (isDisposed) return;
+      _records = List<MedicalRecordModel>.from(loaded);
     } catch (e) {
-      _error = 'Failed to load medical records: $e';
+      if (kDebugMode) {
+        debugPrint('MedicalRecordProvider loadRecords error: $e');
+      }
+      _error = e is AppException
+          ? e.userFriendlyMessage
+          : 'Failed to load medical records. Please retry.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  bool _disposed = false;
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   MedicalRecordModel? getRecordById(String id) {
     try {
       return _records.firstWhere((r) => r.id == id);
-    } catch (_) {
+    } on StateError {
       return null;
     }
   }

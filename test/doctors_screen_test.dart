@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hospital_connect/app.dart';
+import 'helpers/pump_app.dart';
 import 'package:hospital_connect/widgets/widgets.dart';
 
 void main() {
@@ -11,7 +11,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const HospitalConnectApp(useGoogleFonts: false));
+    await pumpHospitalApp(tester);
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pumpAndSettle();
 

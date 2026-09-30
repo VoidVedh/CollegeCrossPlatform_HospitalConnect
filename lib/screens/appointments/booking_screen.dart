@@ -3,14 +3,23 @@ import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/appointment_provider.dart';
+import 'package:hospital_connect/providers/doctor_provider.dart';
 import 'package:hospital_connect/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 /// Appointment booking screen integrating date and time-slot selection.
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({super.key, required this.doctor});
+  const BookingScreen({
+    super.key,
+    this.doctor,
+    this.doctorId,
+  }) : assert(
+          doctor != null || doctorId != null,
+          'Either doctor or doctorId must be provided',
+        );
 
-  final DoctorModel doctor;
+  final DoctorModel? doctor;
+  final String? doctorId;
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -25,10 +34,12 @@ class _BookingScreenState extends State<BookingScreen> {
     super.initState();
     final now = DateTime.now();
     // Default to tomorrow or next available slot date
-    _selectedDate = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    _selectedDate =
+        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
   }
 
   void _handleBookingSubmit({
+    required DoctorModel doctor,
     required String patientName,
     required int patientAge,
     required String patientPhone,
@@ -46,7 +57,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     showAppointmentConfirmationDialog(
       context: context,
-      doctor: widget.doctor,
+      doctor: doctor,
       appointmentDate: _selectedDate,
       timeSlot: _selectedSlot!,
       patientName: patientName,
@@ -60,12 +71,23 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    AppointmentProvider? appointmentProvider;
-    try {
-      appointmentProvider = context.watch<AppointmentProvider>();
-    } catch (_) {
-      appointmentProvider = null;
+    final doctorProvider = context.watch<DoctorProvider>();
+    final activeDoctor = (widget.doctorId != null
+            ? doctorProvider.getDoctorById(widget.doctorId!)
+            : null) ??
+        widget.doctor ??
+        (widget.doctor != null
+            ? doctorProvider.getDoctorById(widget.doctor!.id)
+            : null);
+
+    if (activeDoctor == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Book Appointment')),
+        body: const Center(child: Text('Doctor details not found.')),
+      );
     }
+    final doctor = activeDoctor;
+    final appointmentProvider = context.watch<AppointmentProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +111,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     radius: 24,
                     backgroundColor: colorScheme.primaryContainer,
                     child: Text(
-                      widget.doctor.name
+                      doctor.name
                           .split(' ')
                           .where((p) => p.isNotEmpty && p != 'Dr.')
                           .map((p) => p[0])
@@ -107,21 +129,21 @@ class _BookingScreenState extends State<BookingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.doctor.name,
+                          doctor.name,
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          widget.doctor.specialty,
+                          doctor.specialty,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Fee: ${AppFormatters.formatCurrency(widget.doctor.consultationFee)}',
+                          'Fee: ${AppFormatters.formatCurrency(doctor.consultationFee)}',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.primary,
                             fontWeight: FontWeight.w700,
@@ -137,11 +159,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // 2. Date and Slot Selector Component
             SlotSelector(
-              doctor: widget.doctor,
+              doctor: doctor,
               selectedDate: _selectedDate,
               selectedSlot: _selectedSlot,
-              existingAppointments:
-                  appointmentProvider?.appointments ?? const [],
+              existingAppointments: appointmentProvider.appointments,
               onDateSelected: (date) {
                 setState(() {
                   _selectedDate = date;
@@ -214,7 +235,19 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: const EdgeInsets.all(20),
                 child: PatientBookingForm(
                   isSlotSelected: _selectedSlot != null,
-                  onSubmit: _handleBookingSubmit,
+                  onSubmit: ({
+                    required patientName,
+                    required patientAge,
+                    required patientPhone,
+                    required symptomsNote,
+                  }) =>
+                      _handleBookingSubmit(
+                    doctor: doctor,
+                    patientName: patientName,
+                    patientAge: patientAge,
+                    patientPhone: patientPhone,
+                    symptomsNote: symptomsNote,
+                  ),
                 ),
               ),
             ),

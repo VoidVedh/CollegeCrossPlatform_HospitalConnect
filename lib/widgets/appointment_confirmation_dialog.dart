@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hospital_connect/core/errors/app_exceptions.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 import 'package:hospital_connect/models/models.dart';
-import 'package:hospital_connect/providers/bill_provider.dart';
-import 'package:hospital_connect/providers/doctor_provider.dart';
 import 'package:hospital_connect/providers/appointment_provider.dart';
+import 'package:hospital_connect/services/booking_coordinator.dart';
 import 'package:provider/provider.dart';
 
 /// Shows the interactive pre-booking confirmation dialog followed by success modal.
@@ -80,29 +80,35 @@ class _AppointmentConfirmationDialogState
     });
 
     try {
-      final appointmentProvider = context.read<AppointmentProvider>();
-      final booked = await appointmentProvider.bookAppointment(
-        doctorId: widget.doctor.id,
-        doctorName: widget.doctor.name,
-        doctorSpecialty: widget.doctor.specialty,
-        patientName: widget.patientName,
-        patientAge: widget.patientAge,
-        patientPhone: widget.patientPhone,
-        appointmentDate: widget.appointmentDate,
-        timeSlot: widget.timeSlot,
-        symptomsNote: widget.symptomsNote,
-        consultationFee: _consultationFee,
-      );
-
-      // Refresh doctor slots and bill list across providers if available
-      try {
-        if (mounted) {
-          await Future.wait([
-            context.read<DoctorProvider>().loadDoctors(),
-            context.read<BillProvider>().loadBills(),
-          ]);
-        }
-      } catch (_) {}
+      final coordinator = context.read<BookingCoordinator?>();
+      final AppointmentModel booked;
+      if (coordinator != null) {
+        booked = await coordinator.bookAppointment(
+          doctorId: widget.doctor.id,
+          doctorName: widget.doctor.name,
+          doctorSpecialty: widget.doctor.specialty,
+          patientName: widget.patientName,
+          patientAge: widget.patientAge,
+          patientPhone: widget.patientPhone,
+          appointmentDate: widget.appointmentDate,
+          timeSlot: widget.timeSlot,
+          symptomsNote: widget.symptomsNote,
+          consultationFee: _consultationFee,
+        );
+      } else {
+        booked = await context.read<AppointmentProvider>().bookAppointment(
+              doctorId: widget.doctor.id,
+              doctorName: widget.doctor.name,
+              doctorSpecialty: widget.doctor.specialty,
+              patientName: widget.patientName,
+              patientAge: widget.patientAge,
+              patientPhone: widget.patientPhone,
+              appointmentDate: widget.appointmentDate,
+              timeSlot: widget.timeSlot,
+              symptomsNote: widget.symptomsNote,
+              consultationFee: _consultationFee,
+            );
+      }
 
       if (mounted) {
         setState(() {
@@ -115,7 +121,9 @@ class _AppointmentConfirmationDialogState
       if (mounted) {
         setState(() {
           _isSubmitting = false;
-          _errorMessage = 'Booking failed: $e';
+          _errorMessage = e is AppException
+              ? e.userFriendlyMessage
+              : 'Booking failed. Please check details and try again.';
         });
       }
     }

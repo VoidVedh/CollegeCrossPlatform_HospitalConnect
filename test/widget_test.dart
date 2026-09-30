@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hospital_connect/app.dart';
+import 'helpers/pump_app.dart';
 
 void main() {
   testWidgets('AppShell renders 5-tab NavigationBar and switches tabs',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const HospitalConnectApp(useGoogleFonts: false));
+    await pumpHospitalApp(tester);
     await tester.pumpAndSettle();
 
     // Verify tabs and initial Dashboard content
