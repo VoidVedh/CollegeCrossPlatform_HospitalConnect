@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/theme/app_radius.dart';
 import 'package:hospital_connect/core/theme/app_spacing.dart';
@@ -126,9 +127,51 @@ class AppointmentSuccessModal extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.lg),
 
-              // Action Buttons
+              // Calendar & Share Quick Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Added to Calendar: Consultation with ${appointment.doctorName} on ${AppFormatters.formatDate(appointment.appointmentDate)} at ${appointment.timeSlot}',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.event_available_rounded, size: 16),
+                      label: const Text('Add to Calendar', style: TextStyle(fontSize: 12)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Appointment ${appointment.id} details copied for sharing.',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.share_rounded, size: 16),
+                      label: const Text('Share', style: TextStyle(fontSize: 12)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Navigation Buttons
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -141,7 +184,7 @@ class AppointmentSuccessModal extends StatelessWidget {
                   label: const Text('Go to Appointments'),
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               SizedBox(
                 width: double.infinity,
                 child: TextButton(

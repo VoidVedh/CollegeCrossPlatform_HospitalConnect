@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../core/theme/app_colors.dart';
-import '../core/utils/validators.dart';
+import 'package:hospital_connect/core/theme/app_colors.dart';
+import 'package:hospital_connect/core/utils/validators.dart';
 
 /// Callback signature when valid patient booking details are submitted.
 typedef PatientBookingCallback = void Function({
@@ -11,7 +11,8 @@ typedef PatientBookingCallback = void Function({
   required String symptomsNote,
 });
 
-/// A validated Material 3 patient information form for appointment bookings.
+/// A validated Material 3 patient information form for appointment bookings
+/// with focus traversal and auto-focus on invalid fields.
 class PatientBookingForm extends StatefulWidget {
   final bool isSlotSelected;
   final PatientBookingCallback onSubmit;
@@ -20,6 +21,7 @@ class PatientBookingForm extends StatefulWidget {
   final String? initialAge;
   final String? initialPhone;
   final String? initialSymptoms;
+  final ValueChanged<bool>? onFormDirtyChanged;
 
   const PatientBookingForm({
     super.key,
@@ -30,6 +32,7 @@ class PatientBookingForm extends StatefulWidget {
     this.initialAge,
     this.initialPhone,
     this.initialSymptoms,
+    this.onFormDirtyChanged,
   });
 
   @override
@@ -44,14 +47,36 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
   late final TextEditingController _phoneController;
   late final TextEditingController _symptomsController;
 
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _ageFocus = FocusNode();
+  final FocusNode _phoneFocus = FocusNode();
+  final FocusNode _symptomsFocus = FocusNode();
+
+  bool _isDirty = false;
+
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialName ?? '');
-    _ageController = TextEditingController(text: widget.initialAge ?? '');
-    _phoneController = TextEditingController(text: widget.initialPhone ?? '');
+    _nameController = TextEditingController(text: widget.initialName ?? '')
+      ..addListener(_checkDirty);
+    _ageController = TextEditingController(text: widget.initialAge ?? '')
+      ..addListener(_checkDirty);
+    _phoneController = TextEditingController(text: widget.initialPhone ?? '')
+      ..addListener(_checkDirty);
     _symptomsController =
-        TextEditingController(text: widget.initialSymptoms ?? '');
+        TextEditingController(text: widget.initialSymptoms ?? '')
+          ..addListener(_checkDirty);
+  }
+
+  void _checkDirty() {
+    final hasContent = _nameController.text.isNotEmpty ||
+        _ageController.text.isNotEmpty ||
+        _phoneController.text.isNotEmpty ||
+        _symptomsController.text.isNotEmpty;
+    if (hasContent != _isDirty) {
+      _isDirty = hasContent;
+      widget.onFormDirtyChanged?.call(_isDirty);
+    }
   }
 
   @override
@@ -60,6 +85,10 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
     _ageController.dispose();
     _phoneController.dispose();
     _symptomsController.dispose();
+    _nameFocus.dispose();
+    _ageFocus.dispose();
+    _phoneFocus.dispose();
+    _symptomsFocus.dispose();
     super.dispose();
   }
 
@@ -84,7 +113,23 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
       return;
     }
 
+    final isNameValid = AppValidators.validateName(_nameController.text.trim()) == null;
+    final isAgeValid = AppValidators.validateAge(_ageController.text.trim()) == null;
+    final isPhoneValid = AppValidators.validatePhone(_phoneController.text.trim()) == null;
+    final isSymptomsValid = AppValidators.validateSymptoms(_symptomsController.text.trim()) == null;
+
+    if (!isNameValid) {
+      _nameFocus.requestFocus();
+    } else if (!isAgeValid) {
+      _ageFocus.requestFocus();
+    } else if (!isPhoneValid) {
+      _phoneFocus.requestFocus();
+    } else if (!isSymptomsValid) {
+      _symptomsFocus.requestFocus();
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
+      HapticFeedback.lightImpact();
       widget.onSubmit(
         patientName: _nameController.text.trim(),
         patientAge: int.parse(_ageController.text.trim()),
@@ -127,6 +172,7 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
           TextFormField(
             key: const Key('patient_name_field'),
             controller: _nameController,
+            focusNode: _nameFocus,
             textCapitalization: TextCapitalization.words,
             keyboardType: TextInputType.name,
             validator: AppValidators.validateName,
@@ -148,6 +194,7 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
                 child: TextFormField(
                   key: const Key('patient_age_field'),
                   controller: _ageController,
+                  focusNode: _ageFocus,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -167,6 +214,7 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
                 child: TextFormField(
                   key: const Key('patient_phone_field'),
                   controller: _phoneController,
+                  focusNode: _phoneFocus,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -189,6 +237,7 @@ class _PatientBookingFormState extends State<PatientBookingForm> {
           TextFormField(
             key: const Key('patient_symptoms_field'),
             controller: _symptomsController,
+            focusNode: _symptomsFocus,
             keyboardType: TextInputType.multiline,
             maxLines: 3,
             minLines: 2,

@@ -80,4 +80,28 @@ class BookingCoordinator extends ChangeNotifier with SafeNotifier {
     notifyListeners();
     return cancelled;
   }
+
+  /// Reschedules an appointment to a new date/slot and synchronizes doctor slots and bills.
+  Future<AppointmentModel> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime newDate,
+    required String newTimeSlot,
+    DateTime? currentTime,
+  }) async {
+    final rescheduled = await appointmentProvider.rescheduleAppointment(
+      appointmentId: appointmentId,
+      newDate: newDate,
+      newTimeSlot: newTimeSlot,
+      currentTime: currentTime,
+    );
+
+    await Future.wait([
+      doctorProvider.loadDoctors(),
+      billProvider.loadBills(),
+    ]);
+
+    notifyListeners();
+    return rescheduled;
+  }
 }
+

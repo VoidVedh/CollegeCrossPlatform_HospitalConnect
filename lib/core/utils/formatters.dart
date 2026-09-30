@@ -73,4 +73,22 @@ class AppFormatters {
     }
     return parsed;
   }
+
+  /// Formats next available slot (e.g. "Today, 10:30 AM", "Tomorrow, 02:00 PM", or "02 Oct, 11:00 AM").
+  static String formatNextSlot(DateTime? slot) {
+    if (slot == null) return 'No upcoming slots';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final slotDate = DateTime(slot.year, slot.month, slot.day);
+    final diffDays = slotDate.difference(today).inDays;
+    final timeStr = formatTime(slot);
+
+    if (diffDays == 0) {
+      return 'Today, $timeStr';
+    } else if (diffDays == 1) {
+      return 'Tomorrow, $timeStr';
+    } else {
+      return '${DateFormat('dd MMM').format(slot)}, $timeStr';
+    }
+  }
 }

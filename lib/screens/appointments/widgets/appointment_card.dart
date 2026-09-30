@@ -8,6 +8,7 @@ import 'package:hospital_connect/models/enums.dart';
 import 'package:hospital_connect/screens/app_shell.dart';
 import 'package:hospital_connect/widgets/common/doctor_avatar.dart';
 import 'package:hospital_connect/widgets/common/status_badge.dart';
+import 'package:hospital_connect/screens/appointments/widgets/reschedule_appointment_dialog.dart';
 
 /// Card widget rendering complete appointment information with contextual action buttons.
 class AppointmentCard extends StatelessWidget {
@@ -200,22 +201,43 @@ class AppointmentCard extends StatelessWidget {
 
             // Action triggers
             if (isUpcoming)
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: OutlinedButton.icon(
-                  key: Key('cancel_appointment_btn_${appointment.id}'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: Key('reschedule_appointment_btn_${appointment.id}'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(48, 44),
+                      ),
+                      onPressed: () => RescheduleAppointmentDialog.show(
+                        context,
+                        appointment: appointment,
+                      ),
+                      icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                      label: const Text(
+                        'Reschedule',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ),
-                  onPressed: onCancel,
-                  icon: const Icon(Icons.cancel_outlined, size: 18),
-                  label: const Text(
-                    'Cancel Visit',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: Key('cancel_appointment_btn_${appointment.id}'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(48, 44),
+                        foregroundColor: AppColors.error,
+                        side: const BorderSide(color: AppColors.error),
+                      ),
+                      onPressed: onCancel,
+                      icon: const Icon(Icons.cancel_outlined, size: 16),
+                      label: const Text(
+                        'Cancel Visit',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               )
             else if (isCompleted)
               SizedBox(

@@ -26,6 +26,8 @@ Future<void> pumpHospitalApp(
   PrescriptionProvider? prescriptionProvider,
   BillProvider? billProvider,
   BookingCoordinator? bookingCoordinator,
+  ThemeProvider? themeProvider,
+  PatientProfileProvider? patientProfileProvider,
 }) async {
   final mockData = mockDataService ?? MockDataService();
   final dRepo = doctorRepository ?? MockDoctorRepository(mockData);
@@ -57,6 +59,9 @@ Future<void> pumpHospitalApp(
         doctorProvider: dProvider,
         billProvider: billProv,
       );
+  final thProvider = themeProvider ?? ThemeProvider();
+  final profProvider = patientProfileProvider ??
+      PatientProfileProvider(defaultOnboardingCompleted: true);
 
   final Widget appWidget;
   if (home != null) {
@@ -84,6 +89,8 @@ Future<void> pumpHospitalApp(
         ChangeNotifierProvider<PrescriptionProvider>.value(value: rxProvider),
         ChangeNotifierProvider<BillProvider>.value(value: billProv),
         ChangeNotifierProvider<BookingCoordinator>.value(value: coordinator),
+        ChangeNotifierProvider<ThemeProvider>.value(value: thProvider),
+        ChangeNotifierProvider<PatientProfileProvider>.value(value: profProvider),
       ],
       child: appWidget,
     ),

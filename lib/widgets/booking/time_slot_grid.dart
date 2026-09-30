@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/theme/app_radius.dart';
 import 'package:hospital_connect/core/theme/app_spacing.dart';
@@ -79,9 +80,15 @@ class TimeSlotGrid extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: isDisabled ? null : () => onSlotSelected(slot.time),
+                  onTap: isDisabled
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          onSlotSelected(slot.time);
+                        },
                   borderRadius: AppRadius.roundedSm,
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isSelected
@@ -93,9 +100,7 @@ class TimeSlotGrid extends StatelessWidget {
                       border: Border.all(
                         color: isSelected
                             ? colorScheme.primary
-                            : isDisabled
-                                ? colorScheme.outlineVariant
-                                : colorScheme.outlineVariant,
+                            : colorScheme.outlineVariant,
                       ),
                     ),
                     child: Text(

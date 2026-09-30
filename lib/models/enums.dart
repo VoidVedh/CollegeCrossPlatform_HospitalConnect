@@ -32,3 +32,24 @@ enum PaymentMethodType {
     }
   }
 }
+
+/// Sorting criteria for doctor catalog.
+enum DoctorSortOption {
+  rating,
+  feeLowToHigh,
+  feeHighToLow,
+  experience;
+
+  String get displayName {
+    switch (this) {
+      case DoctorSortOption.rating:
+        return 'Highest Rated';
+      case DoctorSortOption.feeLowToHigh:
+        return 'Fee: Low to High';
+      case DoctorSortOption.feeHighToLow:
+        return 'Fee: High to Low';
+      case DoctorSortOption.experience:
+        return 'Most Experienced';
+    }
+  }
+}

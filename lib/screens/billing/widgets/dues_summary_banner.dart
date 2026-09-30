@@ -4,16 +4,18 @@ import 'package:hospital_connect/core/theme/app_radius.dart';
 import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
 
-/// Banner widget displaying the patient's outstanding dues summary.
+/// Banner widget displaying the patient's outstanding dues summary and paid this month metric.
 class DuesSummaryBanner extends StatelessWidget {
   const DuesSummaryBanner({
     super.key,
     required this.totalDues,
     required this.pendingCount,
+    this.paidThisMonth = 0.0,
   });
 
   final double totalDues;
   final int pendingCount;
+  final double paidThisMonth;
 
   @override
   Widget build(BuildContext context) {
@@ -24,81 +26,114 @@ class DuesSummaryBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: hasDues
-            ? AppColors.primaryContainer.withValues(alpha: 0.6)
-            : AppColors.statusCompleted.withValues(alpha: 0.1),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: AppRadius.roundedXl,
         border: Border.all(
-          color: hasDues
-              ? AppColors.primary.withValues(alpha: 0.3)
-              : AppColors.statusCompleted.withValues(alpha: 0.3),
+          color: colorScheme.outlineVariant,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      hasDues
-                          ? Icons.pending_actions_rounded
-                          : Icons.check_circle_rounded,
-                      size: 18,
-                      color: hasDues
-                          ? AppColors.primary
-                          : AppColors.statusCompleted,
+                    Row(
+                      children: [
+                        Icon(
+                          hasDues
+                              ? Icons.pending_actions_rounded
+                              : Icons.check_circle_rounded,
+                          size: 16,
+                          color: hasDues
+                              ? AppColors.primary
+                              : AppColors.statusCompleted,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          hasDues ? 'OUTSTANDING DUES' : 'ALL DUES CLEARED',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: hasDues
+                                ? AppColors.primary
+                                : AppColors.statusCompleted,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.xs + 2),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
-                      hasDues ? 'OUTSTANDING DUES' : 'ALL DUES CLEARED',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: hasDues
-                            ? AppColors.primary
-                            : AppColors.statusCompleted,
+                      AppFormatters.formatCurrency(totalDues),
+                      key: const Key('total_outstanding_dues_text'),
+                      style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
+                        color: hasDues ? colorScheme.onSurface : AppColors.statusCompleted,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasDues
+                          ? '$pendingCount pending invoice${pendingCount > 1 ? "s" : ""}'
+                          : 'All dues settled in full',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.xs + 2),
-                Text(
-                  AppFormatters.formatCurrency(totalDues),
-                  key: const Key('total_outstanding_dues_text'),
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: hasDues
-                        ? AppColors.primary
-                        : AppColors.statusCompleted,
-                  ),
+              ),
+              Container(
+                height: 54,
+                width: 1,
+                color: colorScheme.outlineVariant,
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.verified_rounded,
+                          size: 16,
+                          color: AppColors.statusCompleted,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'PAID THIS MONTH',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.statusCompleted,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      AppFormatters.formatCurrency(paidThisMonth),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.statusCompleted,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Cleared payments',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  hasDues
-                      ? '$pendingCount pending invoice${pendingCount > 1 ? 's' : ''} awaiting payment'
-                      : 'Zero pending payments across all hospital visits',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: hasDues ? AppColors.primary : AppColors.statusCompleted,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              hasDues ? Icons.account_balance_wallet_rounded : Icons.thumb_up_rounded,
-              color: AppColors.surface,
-              size: 24,
-            ),
+              ),
+            ],
           ),
         ],
       ),

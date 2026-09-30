@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/providers/doctor_provider.dart';
@@ -6,13 +8,8 @@ import 'package:hospital_connect/screens/doctors/doctor_detail_screen.dart';
 import 'package:hospital_connect/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-enum DoctorSortOption {
-  rating,
-  experience,
-  feeAsc,
-}
-
-/// Filterable, searchable catalog of hospital doctors.
+/// Filterable, searchable, sortable catalog of hospital doctors with debounced search
+/// and favorites persistence.
 class DoctorsScreen extends StatefulWidget {
   const DoctorsScreen({super.key});
 
@@ -22,7 +19,7 @@ class DoctorsScreen extends StatefulWidget {
 
 class _DoctorsScreenState extends State<DoctorsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  DoctorSortOption _currentSort = DoctorSortOption.rating;
+  Timer? _debounceTimer;
 
   static const List<Map<String, dynamic>> _specialties = [
     {'label': 'All', 'icon': Icons.medical_services_rounded},
@@ -35,24 +32,19 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  List<DoctorModel> _sortDoctors(List<DoctorModel> list) {
-    final sorted = List<DoctorModel>.from(list);
-    switch (_currentSort) {
-      case DoctorSortOption.rating:
-        sorted.sort((a, b) => b.rating.compareTo(a.rating));
-        break;
-      case DoctorSortOption.experience:
-        sorted.sort((a, b) => b.experienceYears.compareTo(a.experienceYears));
-        break;
-      case DoctorSortOption.feeAsc:
-        sorted.sort((a, b) => a.consultationFee.compareTo(b.consultationFee));
-        break;
-    }
-    return sorted;
+  void _onSearchChanged(String query, DoctorProvider provider) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        provider.setSearchQuery(query);
+      }
+    });
+    setState(() {});
   }
 
   void _navigateToDetail(BuildContext context, DoctorModel doctor) {
@@ -69,139 +61,154 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final doctorProvider = context.watch<DoctorProvider>();
-
-    final filtered = doctorProvider.filteredDoctors;
-    final sorted = _sortDoctors(filtered);
+    final doctors = doctorProvider.filteredDoctors;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Doctors'),
         actions: [
+          IconButton(
+            icon: Icon(
+              doctorProvider.showFavoritesOnly
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: doctorProvider.showFavoritesOnly ? AppColors.error : null,
+            ),
+            tooltip: doctorProvider.showFavoritesOnly ? 'Show all' : 'Show favorites',
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              doctorProvider.setShowFavoritesOnly(!doctorProvider.showFavoritesOnly);
+            },
+          ),
           PopupMenuButton<DoctorSortOption>(
             icon: const Icon(Icons.sort_rounded),
             tooltip: 'Sort Doctors',
-            initialValue: _currentSort,
+            initialValue: doctorProvider.sortOption,
             onSelected: (option) {
-              setState(() {
-                _currentSort = option;
-              });
+              HapticFeedback.selectionClick();
+              doctorProvider.setSortOption(option);
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: DoctorSortOption.rating,
-                child: Text('Highest Rated'),
-              ),
-              const PopupMenuItem(
-                value: DoctorSortOption.experience,
-                child: Text('Most Experienced'),
-              ),
-              const PopupMenuItem(
-                value: DoctorSortOption.feeAsc,
-                child: Text('Consultation Fee: Low to High'),
-              ),
-            ],
+            itemBuilder: (context) => DoctorSortOption.values.map((opt) {
+              return PopupMenuItem(
+                value: opt,
+                child: Text(opt.displayName),
+              );
+            }).toList(),
           ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Search Input Field
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SearchBar(
-                controller: _searchController,
-                hintText: 'Search by doctor, specialty, hospital...',
-                leading: const Padding(
-                  padding: EdgeInsets.only(left: 12),
-                  child: Icon(Icons.search_rounded),
-                ),
-                trailing: _searchController.text.isNotEmpty
-                    ? [
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded),
-                          onPressed: () {
-                            _searchController.clear();
-                            doctorProvider.setSearchQuery('');
-                          },
-                        ),
-                      ]
-                    : null,
-                onChanged: (value) {
-                  setState(() {});
-                  doctorProvider.setSearchQuery(value);
-                },
-              ),
-            ),
-
-            // Horizontal Specialty Chips Bar
-            SizedBox(
-              height: 48,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _specialties.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final item = _specialties[index];
-                  final label = item['label'] as String;
-                  final icon = item['icon'] as IconData;
-                  final isSelected =
-                      doctorProvider.selectedSpecialty.toLowerCase() ==
-                          label.toLowerCase();
-
-                  return SpecialtyChip(
-                    label: label,
-                    icon: icon,
-                    isSelected: isSelected,
-                    onTap: () => doctorProvider.setSpecialty(label),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Results count strip
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                children: [
-                  Text(
-                    'Showing ${sorted.length} specialists',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (doctorProvider.selectedSpecialty != 'All' ||
-                      doctorProvider.searchQuery.isNotEmpty)
-                    TextButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        doctorProvider.setSearchQuery('');
-                        doctorProvider.setSpecialty('All');
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      child: const Text('Reset Filters'),
-                    ),
-                ],
-              ),
-            ),
-
-            // Doctor List Content with Loading & Empty States
+            _buildSearchBar(doctorProvider),
+            _buildSpecialtiesBar(doctorProvider),
+            const SizedBox(height: 8),
+            _buildResultsHeader(theme, colorScheme, doctorProvider, doctors.length),
             Expanded(
-              child: _buildListContent(
-                context,
-                doctorProvider,
-                sorted,
-              ),
+              child: _buildListContent(context, doctorProvider, doctors),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(DoctorProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SearchBar(
+        controller: _searchController,
+        hintText: 'Search by doctor, specialty, hospital...',
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: Icon(Icons.search_rounded),
+        ),
+        trailing: _searchController.text.isNotEmpty
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () {
+                    _searchController.clear();
+                    provider.setSearchQuery('');
+                    setState(() {});
+                  },
+                ),
+              ]
+            : null,
+        onChanged: (value) => _onSearchChanged(value, provider),
+      ),
+    );
+  }
+
+  Widget _buildSpecialtiesBar(DoctorProvider provider) {
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _specialties.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final item = _specialties[index];
+          final label = item['label'] as String;
+          final icon = item['icon'] as IconData;
+          final isSelected =
+              provider.selectedSpecialty.toLowerCase() == label.toLowerCase();
+
+          return SpecialtyChip(
+            label: label,
+            icon: icon,
+            isSelected: isSelected,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              provider.setSpecialty(label);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildResultsHeader(
+    ThemeData theme,
+    ColorScheme colorScheme,
+    DoctorProvider provider,
+    int count,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            'Showing $count ${count == 1 ? "specialist" : "specialists"}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (provider.showFavoritesOnly) ...[
+            const SizedBox(width: 6),
+            const Icon(Icons.favorite_rounded, size: 14, color: AppColors.error),
+          ],
+          const Spacer(),
+          if (provider.selectedSpecialty != 'All' ||
+              provider.searchQuery.isNotEmpty ||
+              provider.showFavoritesOnly)
+            TextButton(
+              onPressed: () {
+                _searchController.clear();
+                provider.setSearchQuery('');
+                provider.setSpecialty('All');
+                provider.setShowFavoritesOnly(false);
+                setState(() {});
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text('Reset Filters'),
+            ),
+        ],
       ),
     );
   }
@@ -266,7 +273,7 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'No doctor matches your filter. Try adjusting your search query or selecting a different specialty.',
+                'No doctor matches your filter. Try adjusting your search query, sorting, or specialty.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -278,6 +285,8 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
                   _searchController.clear();
                   provider.setSearchQuery('');
                   provider.setSpecialty('All');
+                  provider.setShowFavoritesOnly(false);
+                  setState(() {});
                 },
                 child: const Text('Clear All Filters'),
               ),
@@ -287,17 +296,24 @@ class _DoctorsScreenState extends State<DoctorsScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      itemCount: doctors.length,
-      itemBuilder: (context, index) {
-        final doctor = doctors[index];
-        return DoctorCard(
-          doctor: doctor,
-          onTap: () => _navigateToDetail(context, doctor),
-          onBookVisit: () => _navigateToDetail(context, doctor),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: () => provider.loadDoctors(),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        itemCount: doctors.length,
+        itemBuilder: (context, index) {
+          final doctor = doctors[index];
+          return DoctorCard(
+            doctor: doctor,
+            searchQuery: provider.searchQuery,
+            isFavorite: provider.isFavorite(doctor.id),
+            onToggleFavorite: () => provider.toggleFavorite(doctor.id),
+            nextAvailableSlot: provider.getNextAvailableSlot(doctor),
+            onTap: () => _navigateToDetail(context, doctor),
+            onBookVisit: () => _navigateToDetail(context, doctor),
+          );
+        },
+      ),
     );
   }
 }

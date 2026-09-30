@@ -6,3 +6,4 @@ export 'info_row.dart';
 export 'loading_skeleton.dart';
 export 'section_header.dart';
 export 'status_badge.dart';
+export 'highlighted_text.dart';

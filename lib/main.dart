@@ -25,6 +25,12 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+        ),
+        ChangeNotifierProvider<PatientProfileProvider>(
+          create: (_) => PatientProfileProvider(),
+        ),
         ChangeNotifierProvider<DoctorProvider>(
           create: (_) => DoctorProvider(doctorRepository),
         ),

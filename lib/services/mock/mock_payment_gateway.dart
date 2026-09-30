@@ -2,7 +2,7 @@ import 'package:hospital_connect/models/enums.dart';
 import 'package:hospital_connect/services/repositories/payment_gateway.dart';
 import 'package:uuid/uuid.dart';
 
-/// Mock payment gateway simulating real-world gateway responses.
+/// Mock payment gateway simulating real-world gateway responses with failure triggers.
 class MockPaymentGateway implements PaymentGateway {
   static const Uuid _uuid = Uuid();
   static const Duration _processingDelay = Duration(milliseconds: 600);
@@ -16,35 +16,59 @@ class MockPaymentGateway implements PaymentGateway {
   }) async {
     await Future.delayed(_processingDelay);
 
-    // Validate based on payment method
+    // Validate based on payment method and check simulated failure triggers
     switch (method) {
       case PaymentMethodType.upi:
-        final upiId = details['upiId'] ?? '';
+        final upiId = (details['upiId'] ?? '').trim().toLowerCase();
         if (!upiId.contains('@')) {
           return const PaymentResult(
             isSuccess: false,
             transactionId: '',
-            message: 'Invalid UPI ID format.',
+            message: 'Invalid UPI ID format. Expected user@bank',
+          );
+        }
+        if (upiId.contains('fail') || upiId.contains('decline')) {
+          return const PaymentResult(
+            isSuccess: false,
+            transactionId: '',
+            message: 'UPI payment declined by bank: Insufficient funds or server timeout.',
           );
         }
         break;
+
       case PaymentMethodType.card:
-        final cardNumber = details['cardNumber'] ?? '';
-        if (cardNumber.replaceAll(RegExp(r'\s+'), '').length < 16) {
+        final cleanNumber = (details['cardNumber'] ?? '').replaceAll(RegExp(r'\s+'), '');
+        final cardHolder = (details['cardHolder'] ?? '').toUpperCase();
+        if (cleanNumber.length < 15) {
           return const PaymentResult(
             isSuccess: false,
             transactionId: '',
             message: 'Invalid card number details.',
           );
         }
+        if (cleanNumber.endsWith('0002') || cardHolder.contains('FAIL') || cardHolder.contains('DECLINE')) {
+          return const PaymentResult(
+            isSuccess: false,
+            transactionId: '',
+            message: 'Card declined: Transaction denied by issuing bank (Simulated Failure).',
+          );
+        }
         break;
+
       case PaymentMethodType.netBanking:
-        final bankName = details['bankName'] ?? '';
+        final bankName = (details['bankName'] ?? '').trim();
         if (bankName.isEmpty) {
           return const PaymentResult(
             isSuccess: false,
             transactionId: '',
             message: 'Please select your bank.',
+          );
+        }
+        if (bankName.toLowerCase().contains('fail')) {
+          return const PaymentResult(
+            isSuccess: false,
+            transactionId: '',
+            message: 'Bank gateway timeout: Transaction declined by bank server.',
           );
         }
         break;

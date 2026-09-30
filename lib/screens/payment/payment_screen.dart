@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hospital_connect/core/theme/app_colors.dart';
 import 'package:hospital_connect/core/theme/app_spacing.dart';
 import 'package:hospital_connect/core/utils/formatters.dart';
@@ -33,6 +35,7 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   PaymentMethodType _selectedMethod = PaymentMethodType.upi;
+  bool _isProcessing = false;
 
   final GlobalKey<FormState> _upiFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _cardFormKey = GlobalKey<FormState>();
@@ -89,6 +92,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _handlePay() {
+    if (_isProcessing) return; // Double-tap protection
+    HapticFeedback.lightImpact();
+
     Map<String, String> details = {};
 
     switch (_selectedMethod) {
@@ -99,13 +105,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       case PaymentMethodType.card:
         if (!_cardFormKey.currentState!.validate()) return;
+        final rawCard = _cardNumberController.text.replaceAll(RegExp(r'\s+'), '');
         details = {
-          'cardNumber':
-              _cardNumberController.text.replaceAll(RegExp(r'\s+'), ''),
+          'cardNumber': rawCard,
           'cardHolder': _cardHolderController.text.trim(),
           'cardExpiry': _cardExpiryController.text.trim(),
           'cardCvv': _cardCvvController.text.trim(),
         };
+        // Wipe raw CVV from state for security hygiene
+        _cardCvvController.clear();
         break;
 
       case PaymentMethodType.netBanking:
@@ -132,6 +140,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final bill = _resolveBill(context);
     if (bill == null) return;
 
+    setState(() => _isProcessing = true);
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -146,8 +156,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     if (!mounted) return;
     Navigator.of(context, rootNavigator: true).pop(); // Close processing dialog
+    setState(() => _isProcessing = false);
 
     if (result.isSuccess) {
+      HapticFeedback.heavyImpact();
       widget.onPaymentSuccess?.call();
       PaymentSuccessSheet.show(
         context,
@@ -160,14 +172,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
         },
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      HapticFeedback.vibrate();
+      _showDeclinedDialog(result.message);
     }
+  }
+
+  void _showDeclinedDialog(String errorMessage) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        icon: const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 40),
+        title: const Text('Payment Declined'),
+        content: Text(
+          errorMessage.isNotEmpty
+              ? errorMessage
+              : 'The transaction could not be authorized. Please verify your details or use a different payment method.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Change Method'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(dialogCtx).pop();
+              _handlePay();
+            },
+            child: const Text('Retry Payment'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSelectedMethodForm() {
@@ -229,6 +264,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
               children: [
                 BillSummaryCard(bill: bill),
+                const SizedBox(height: AppSpacing.md),
+                _buildTimerStrip(theme),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
                   'Select Payment Method',
@@ -252,10 +289,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   height: 52,
                   child: FilledButton.icon(
                     key: const Key('pay_securely_button'),
-                    onPressed: _handlePay,
-                    icon: const Icon(Icons.lock_rounded, size: 20),
+                    onPressed: _isProcessing ? null : _handlePay,
+                    icon: _isProcessing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Icon(Icons.lock_rounded, size: 20),
                     label: Text(
-                      'Pay ${AppFormatters.formatCurrency(bill.totalAmount)} Securely',
+                      _isProcessing
+                          ? 'Authorizing...'
+                          : 'Pay ${AppFormatters.formatCurrency(bill.totalAmount)} Securely',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -265,6 +310,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTimerStrip(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.timer_outlined, size: 16, color: theme.colorScheme.primary),
+          const SizedBox(width: 6),
+          Text(
+            'Complete payment within 14:59 to confirm slot',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

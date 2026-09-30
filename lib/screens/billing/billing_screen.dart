@@ -87,6 +87,12 @@ class _BillingScreenState extends State<BillingScreen> {
       (sum, bill) => sum + bill.totalAmount,
     );
 
+    final now = DateTime.now();
+    final paidThisMonth = paidBills.where((b) {
+      final date = b.paidAt ?? b.billDate;
+      return date.year == now.year && date.month == now.month;
+    }).fold<double>(0.0, (sum, bill) => sum + bill.totalAmount);
+
     return RefreshIndicator(
       onRefresh: () => provider.loadBills(),
       child: ListView(
@@ -99,6 +105,7 @@ class _BillingScreenState extends State<BillingScreen> {
           DuesSummaryBanner(
             totalDues: totalOutstanding,
             pendingCount: unpaidBills.length,
+            paidThisMonth: paidThisMonth,
           ),
           const SizedBox(height: AppSpacing.lg),
 

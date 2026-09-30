@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hospital_connect/providers/bill_provider.dart';
+import 'package:hospital_connect/providers/patient_profile_provider.dart';
 import 'package:hospital_connect/screens/appointments/appointments_screen.dart';
 import 'package:hospital_connect/screens/billing/billing_screen.dart';
 import 'package:hospital_connect/screens/dashboard/dashboard_screen.dart';
 import 'package:hospital_connect/screens/doctors/doctors_screen.dart';
+import 'package:hospital_connect/screens/onboarding/onboarding_modal.dart';
 import 'package:hospital_connect/screens/records/records_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -42,6 +44,16 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkFirstRunOnboarding();
+    });
+  }
+
+  void _checkFirstRunOnboarding() {
+    final profile = Provider.of<PatientProfileProvider?>(context, listen: false);
+    if (profile != null && !profile.hasSeenOnboarding && mounted) {
+      OnboardingModal.show(context);
+    }
   }
 
   void selectTab(int index) {

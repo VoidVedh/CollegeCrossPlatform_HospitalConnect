@@ -278,4 +278,99 @@ class AppointmentProvider extends ChangeNotifier with SafeNotifier {
       }
     }
   }
+
+  /// Reschedules an existing upcoming appointment to a new date and time slot.
+  Future<AppointmentModel> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime newDate,
+    required String newTimeSlot,
+    DateTime? currentTime,
+  }) async {
+    final now = currentTime ?? DateTime.now();
+    final newSlotDateTime = AppFormatters.tryParseTimeSlot(newDate, newTimeSlot);
+    if (newSlotDateTime == null) {
+      throw ValidationException('Invalid time slot format: "$newTimeSlot"');
+    }
+    if (newSlotDateTime.isBefore(now)) {
+      throw const PastSlotBookingException();
+    }
+
+    final appointment = _appointments.firstWhere(
+      (a) => a.id == appointmentId,
+      orElse: () => throw NotFoundException('Appointment $appointmentId not found'),
+    );
+
+    final isAlreadyBooked = _appointments.any((a) =>
+        a.id != appointmentId &&
+        a.doctorId == appointment.doctorId &&
+        a.status == AppointmentStatus.upcoming &&
+        a.appointmentDate.year == newDate.year &&
+        a.appointmentDate.month == newDate.month &&
+        a.appointmentDate.day == newDate.day &&
+        a.timeSlot.trim().toLowerCase() == newTimeSlot.trim().toLowerCase());
+
+    if (isAlreadyBooked) {
+      throw const SlotUnavailableException(
+        'The selected slot is already booked. Please choose another time.',
+      );
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final oldSlot = AppFormatters.tryParseTimeSlot(
+        appointment.appointmentDate,
+        appointment.timeSlot,
+      );
+      if (oldSlot != null) {
+        await doctorRepository.markSlotAvailability(
+          doctorId: appointment.doctorId,
+          slot: oldSlot,
+          isAvailable: true,
+        );
+      }
+
+      await doctorRepository.markSlotAvailability(
+        doctorId: appointment.doctorId,
+        slot: newSlotDateTime,
+        isAvailable: false,
+      );
+
+      final updated = appointment.copyWith(
+        appointmentDate: newDate,
+        timeSlot: newTimeSlot,
+      );
+      await _repository.deleteAppointment(appointmentId);
+      final saved = await _repository.bookAppointment(updated);
+
+      if (!isDisposed) {
+        final index = _appointments.indexWhere((a) => a.id == appointmentId);
+        if (index != -1) {
+          _appointments[index] = saved;
+        }
+      }
+
+      final bills = await billRepository.getBills();
+      for (final b in bills) {
+        if (b.appointmentId == appointmentId && b.status != BillStatus.paid) {
+          final updatedBill = b.copyWith(billDate: newDate);
+          await billRepository.removeBill(b.id);
+          await billRepository.addBill(updatedBill);
+        }
+      }
+
+      return saved;
+    } catch (e) {
+      _error = e is AppException ? e.userFriendlyMessage : 'Rescheduling failed: $e';
+      rethrow;
+    } finally {
+      if (!isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    }
+  }
 }
+
