@@ -232,7 +232,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
           ),
           const Divider(height: AppSpacing.xxl),
 
-          // App Metadata & Viva Info
+          // App Metadata & Build Info
           Text(
             'About HospitalConnect',
             style: theme.textTheme.labelMedium?.copyWith(
@@ -245,13 +245,13 @@ class _SettingsSheetState extends State<SettingsSheet> {
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.local_hospital_rounded, color: AppColors.primary),
             title: Text('HospitalConnect Health Network'),
-            subtitle: Text('Sprint 1 Cross-Platform Healthcare Architecture • Material 3'),
+            subtitle: Text('Cross-Platform Healthcare Architecture • Material 3'),
           ),
           const ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.verified_outlined),
             title: Text('Application Version'),
-            subtitle: Text('v1.0.0 (Viva Demonstration Build)'),
+            subtitle: Text('v1.0.0 (Release Build)'),
           ),
           const SizedBox(height: AppSpacing.lg),
         ],

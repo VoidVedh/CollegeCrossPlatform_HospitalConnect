@@ -53,13 +53,13 @@ The project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   - UI Stepper & Confirmation Dialog interaction flow.
 - **test(coverage)**: Expanded test suite to 98 automated unit, widget, and integration tests with 100% green pass rate and 88.75% code coverage.
 
-### Phase 7: Platform Branding, Offline Fonts & Viva Documentation
+### Phase 7: Platform Branding, Offline Fonts & Architecture Documentation
 - **docs(branding)**: Unified platform branding to `HospitalConnect` across Android (`AndroidManifest.xml`), iOS (`Info.plist`), Web (`manifest.json`), macOS (`AppInfo.xcconfig`), Windows (`main.cpp`), and Linux (`my_application.cc`).
 - **feat(theme)**: Added offline system font fallbacks (`Roboto`, `SF Pro Text`, `Segoe UI`, `Helvetica Neue`, `sans-serif`) to ensure zero glyph rendering delays or blank text without network access.
-- **docs(viva)**: Comprehensive `README.md` revamp including:
+- **docs(arch)**: Comprehensive `README.md` revamp including:
   - Mermaid architecture and sequence diagrams.
   - Screenshots guide table with key capture frames.
-  - 3-minute viva demo script for project examination.
-  - Top 10 viva questions and architectural defenses.
+  - 3-minute product walkthrough and feature demo script.
+  - Top 10 architectural FAQ and engineering defenses.
   - Architecture trade-offs and known limitations.
 - **ci**: Automated GitHub Actions CI workflow in `.github/workflows/flutter_ci.yml` verifying `flutter analyze` and `flutter test --coverage`.

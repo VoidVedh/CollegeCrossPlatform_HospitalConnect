@@ -1,6 +1,6 @@
-# HospitalConnect (CollegeCrossPlatform_HospitalConnect)
+# HospitalConnect
 
-A production-grade, accessible cross-platform mobile healthcare management application built with **Flutter** and **Material 3** for the B.Tech CSE & AI college project (Cross Platform Application Development course).
+A production-grade, accessible cross-platform mobile healthcare management application built with **Flutter** and **Material 3**.
 
 [![HospitalConnect CI](https://github.com/VoidVedh/CollegeCrossPlatform_HospitalConnect/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/VoidVedh/CollegeCrossPlatform_HospitalConnect/actions/workflows/flutter_ci.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.22%2B-02569B?logo=flutter)](https://flutter.dev)
@@ -171,9 +171,9 @@ sequenceDiagram
 
 ---
 
-## ⏱️ 3-Minute Examination Demo Script
+## ⏱️ 3-Minute Product Walkthrough & Demo Script
 
-When presenting this project to examiners, follow this structured 3-minute walkthrough:
+For live product demonstrations and feature evaluation, follow this structured 3-minute sequence:
 
 - **Minute 0:00 - 0:30 (Architecture & Dashboard Overview)**
   - Launch the app: Point out the Material 3 Clinical Teal theme, high-contrast typography, and live greeting.
@@ -205,7 +205,7 @@ When presenting this project to examiners, follow this structured 3-minute walkt
 
 ---
 
-## 🎓 Top 10 Viva Questions & Architectural Defenses
+## 💡 Top 10 Architectural FAQ & Technical Deep-Dive
 
 ### 1. Why use the Provider pattern instead of Riverpod, Bloc, or GetX?
 > **Answer**: `Provider` is the official Flutter team recommended state management library for mid-sized production applications. It maps cleanly to Flutter's native inherited widget mechanism and provides explicit lifecycle management via `ChangeNotifier`. Unlike GetX, it enforces strict compile-time type safety; unlike Bloc, it avoids verbose boilerplate for straightforward domain state while demonstrating mastery of core Flutter primitives.
