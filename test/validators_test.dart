@@ -34,9 +34,9 @@ void main() {
       expect(AppValidators.validateUpiId('invalidupi'), isNotNull);
     });
 
-    test('validateCardNumber requires 16 digits', () {
-      expect(AppValidators.validateCardNumber('4111 2222 3333 4444'), isNull);
-      expect(AppValidators.validateCardNumber('4111222233334444'), isNull);
+    test('validateCardNumber requires 16 digits and valid checksum', () {
+      expect(AppValidators.validateCardNumber('4111 1111 1111 1111'), isNull);
+      expect(AppValidators.validateCardNumber('4111111111111111'), isNull);
       expect(AppValidators.validateCardNumber('1234'), isNotNull);
     });
   });

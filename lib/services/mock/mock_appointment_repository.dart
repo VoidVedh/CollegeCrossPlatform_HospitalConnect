@@ -40,4 +40,11 @@ class MockAppointmentRepository implements AppointmentRepository {
     final updated = _dataSource.appointments.firstWhere((a) => a.id == id);
     return updated;
   }
+
+  @override
+  Future<bool> deleteAppointment(String id) async {
+    await Future.delayed(_delay);
+    _dataSource.deleteAppointment(id);
+    return true;
+  }
 }

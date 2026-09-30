@@ -13,4 +13,7 @@ abstract class AppointmentRepository {
 
   /// Cancels an upcoming appointment.
   Future<AppointmentModel> cancelAppointment(String id);
+
+  /// Deletes an appointment by ID (used for transactional rollback).
+  Future<bool> deleteAppointment(String id);
 }

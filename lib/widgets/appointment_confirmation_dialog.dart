@@ -97,8 +97,10 @@ class _AppointmentConfirmationDialogState
       // Refresh doctor slots and bill list across providers if available
       try {
         if (mounted) {
-          context.read<DoctorProvider>().loadDoctors();
-          context.read<BillProvider>().loadBills();
+          await Future.wait([
+            context.read<DoctorProvider>().loadDoctors(),
+            context.read<BillProvider>().loadBills(),
+          ]);
         }
       } catch (_) {}
 

@@ -12,6 +12,7 @@ enum BillStatus {
   unpaid,
   paid,
   pending,
+  cancelled,
 }
 
 /// Payment method types supported by the payment gateway.

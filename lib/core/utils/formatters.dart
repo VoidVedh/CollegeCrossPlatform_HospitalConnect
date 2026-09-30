@@ -47,8 +47,9 @@ class AppFormatters {
     return _dateTimeFormat.format(date);
   }
 
-  /// Parses a 12-hour time slot string (e.g. "10:30 AM") into a DateTime on the given [date].
-  static DateTime parseTimeSlot(DateTime date, String timeSlot) {
+  /// Attempts to parse a 12-hour time slot string (e.g. "10:30 AM") into a DateTime on the given [date].
+  /// Returns null if parsing fails.
+  static DateTime? tryParseTimeSlot(DateTime date, String timeSlot) {
     try {
       final parsedTime = _timeFormat.parse(timeSlot.trim());
       return DateTime(
@@ -59,7 +60,17 @@ class AppFormatters {
         parsedTime.minute,
       );
     } catch (_) {
-      return DateTime(date.year, date.month, date.day);
+      return null;
     }
+  }
+
+  /// Parses a 12-hour time slot string (e.g. "10:30 AM") into a DateTime on the given [date].
+  /// Throws [FormatException] if the slot string cannot be parsed. Never silently returns midnight.
+  static DateTime parseTimeSlot(DateTime date, String timeSlot) {
+    final parsed = tryParseTimeSlot(date, timeSlot);
+    if (parsed == null) {
+      throw FormatException('Invalid time slot format: "$timeSlot". Expected format e.g. 10:30 AM');
+    }
+    return parsed;
   }
 }

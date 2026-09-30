@@ -46,6 +46,12 @@ class _FakeBillRepository implements BillRepository {
     _bills[index] = updated;
     return updated;
   }
+
+  @override
+  Future<bool> removeBill(String id) async {
+    _bills.removeWhere((b) => b.id == id);
+    return true;
+  }
 }
 
 void main() {

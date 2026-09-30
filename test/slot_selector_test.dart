@@ -47,21 +47,23 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) {
-              return SlotSelector(
-                doctor: doctor,
-                selectedDate: chosenDate,
-                selectedSlot: chosenSlot,
-                existingAppointments: existingAppointments,
-                onDateSelected: (date) {
-                  setState(() => chosenDate = date);
-                },
-                onSlotSelected: (slot) {
-                  setState(() => chosenSlot = slot);
-                },
-              );
-            },
+          body: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return SlotSelector(
+                  doctor: doctor,
+                  selectedDate: chosenDate,
+                  selectedSlot: chosenSlot,
+                  existingAppointments: existingAppointments,
+                  onDateSelected: (date) {
+                    setState(() => chosenDate = date);
+                  },
+                  onSlotSelected: (slot) {
+                    setState(() => chosenSlot = slot);
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),

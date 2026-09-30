@@ -19,4 +19,7 @@ abstract class BillRepository {
     PaymentMethodType? paymentMethod,
     DateTime? paidAt,
   });
+
+  /// Deletes or voids a bill by ID (used for transactional rollback).
+  Future<bool> removeBill(String id);
 }

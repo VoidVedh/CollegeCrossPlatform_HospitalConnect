@@ -38,6 +38,11 @@ class BillCard extends StatelessWidget {
         icon = Icons.hourglass_top_rounded;
         label = 'PENDING';
         break;
+      case BillStatus.cancelled:
+        color = AppColors.statusCancelled;
+        icon = Icons.block_rounded;
+        label = 'CANCELLED';
+        break;
     }
 
     return Container(
@@ -288,6 +293,40 @@ class BillCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              )
+            else if (bill.status == BillStatus.cancelled)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.statusCancelled.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.statusCancelled.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: AppColors.statusCancelled,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'Appointment Cancelled - Invoice Voided',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.statusCancelled,
+                      ),
+                    ),
+                  ],
+                ),
               )
             else
               SizedBox(

@@ -87,6 +87,12 @@ class _FakeAppointmentRepo implements AppointmentRepository {
     _appointments[idx] = updated;
     return updated;
   }
+
+  @override
+  Future<bool> deleteAppointment(String id) async {
+    _appointments.removeWhere((a) => a.id == id);
+    return true;
+  }
 }
 
 class _FakeBillRepo implements BillRepository {
@@ -126,6 +132,12 @@ class _FakeBillRepo implements BillRepository {
     );
     _bills[idx] = updated;
     return updated;
+  }
+
+  @override
+  Future<bool> removeBill(String id) async {
+    _bills.removeWhere((b) => b.id == id);
+    return true;
   }
 }
 

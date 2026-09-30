@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hospital_connect/models/models.dart';
 import 'package:hospital_connect/services/repositories/repositories.dart';
+import 'package:uuid/uuid.dart';
 
 /// State management provider for invoices, itemized billing, and simulated payment gateway execution.
 class BillProvider extends ChangeNotifier {
@@ -13,6 +14,7 @@ class BillProvider extends ChangeNotifier {
 
   final BillRepository billRepository;
   final PaymentGateway paymentGateway;
+  static const Uuid _uuid = Uuid();
 
   List<BillModel> _bills = <BillModel>[];
   bool _isLoading = false;
@@ -27,14 +29,29 @@ class BillProvider extends ChangeNotifier {
   PaymentResult? get lastPaymentResult => _lastPaymentResult;
 
   /// Returns count of unpaid or pending bills for the NavigationBar badge.
+  /// Cancelled and paid bills are excluded.
   int get unpaidBillsCount =>
-      _bills.where((b) => b.status != BillStatus.paid).length;
+      _bills.where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending).length;
 
   List<BillModel> get unpaidBills =>
-      _bills.where((b) => b.status != BillStatus.paid).toList();
+      _bills.where((b) => b.status == BillStatus.unpaid || b.status == BillStatus.pending).toList();
 
   List<BillModel> get paidBills =>
       _bills.where((b) => b.status == BillStatus.paid).toList();
+
+  List<BillModel> get cancelledBills =>
+      _bills.where((b) => b.status == BillStatus.cancelled).toList();
+
+  /// Collision-safe bill ID generator.
+  static String generateUniqueBillId(Iterable<String> existingIds) {
+    final existingSet = existingIds.toSet();
+    for (int attempt = 0; attempt < 50; attempt++) {
+      final randomSuffix = _uuid.v4().substring(0, 6).toUpperCase();
+      final id = 'BIL-$randomSuffix';
+      if (!existingSet.contains(id)) return id;
+    }
+    return 'BIL-${DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase()}';
+  }
 
   Future<void> loadBills() async {
     _isLoading = true;
@@ -82,6 +99,23 @@ class BillProvider extends ChangeNotifier {
     return added;
   }
 
+  /// Voids or cancels a bill (e.g. when linked appointment is cancelled).
+  Future<BillModel?> cancelBill(String billId) async {
+    final bill = getBillById(billId);
+    if (bill == null || bill.status == BillStatus.paid) return null;
+
+    final updated = await billRepository.updateBillStatus(
+      billId: billId,
+      status: BillStatus.cancelled,
+    );
+    final index = _bills.indexWhere((b) => b.id == billId);
+    if (index != -1) {
+      _bills[index] = updated;
+    }
+    notifyListeners();
+    return updated;
+  }
+
   /// Executes payment processing through the payment gateway and marks bill as paid.
   Future<PaymentResult> payBill({
     required String billId,
@@ -94,6 +128,26 @@ class BillProvider extends ChangeNotifier {
         isSuccess: false,
         transactionId: '',
         message: 'Bill not found.',
+      );
+      _lastPaymentResult = result;
+      return result;
+    }
+
+    if (bill.status == BillStatus.cancelled) {
+      const result = PaymentResult(
+        isSuccess: false,
+        transactionId: '',
+        message: 'Cannot pay a cancelled invoice.',
+      );
+      _lastPaymentResult = result;
+      return result;
+    }
+
+    if (bill.status == BillStatus.paid) {
+      const result = PaymentResult(
+        isSuccess: false,
+        transactionId: '',
+        message: 'This invoice has already been paid.',
       );
       _lastPaymentResult = result;
       return result;

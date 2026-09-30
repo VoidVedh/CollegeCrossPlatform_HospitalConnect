@@ -55,6 +55,8 @@ class _AuditAppointmentRepo implements AppointmentRepository {
   @override
   Future<AppointmentModel> cancelAppointment(String id) async =>
       throw UnimplementedError();
+  @override
+  Future<bool> deleteAppointment(String id) async => true;
 }
 
 class _AuditBillRepo implements BillRepository {
@@ -83,6 +85,8 @@ class _AuditBillRepo implements BillRepository {
     DateTime? paidAt,
   }) async =>
       (await getBills()).first.copyWith(status: status);
+  @override
+  Future<bool> removeBill(String id) async => true;
 }
 
 class _AuditPaymentGateway implements PaymentGateway {
@@ -136,7 +140,7 @@ void main() {
       expect(AppValidators.validateUpiId('patient@okhdfcbank'), isNull);
 
       expect(AppValidators.validateCardNumber('1234'), isNotNull);
-      expect(AppValidators.validateCardNumber('4532890123456789'), isNull);
+      expect(AppValidators.validateCardNumber('4111111111111111'), isNull);
 
       expect(AppValidators.validateCardExpiry('13/28'), isNotNull);
       expect(AppValidators.validateCardExpiry('08/20'), isNotNull); // Expired

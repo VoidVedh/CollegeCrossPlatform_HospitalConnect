@@ -50,4 +50,11 @@ class MockBillRepository implements BillRepository {
     final updated = _dataSource.bills.firstWhere((b) => b.id == billId);
     return updated;
   }
+
+  @override
+  Future<bool> removeBill(String id) async {
+    await Future.delayed(_delay);
+    _dataSource.removeBill(id);
+    return true;
+  }
 }

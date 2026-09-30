@@ -1,3 +1,4 @@
+import 'package:hospital_connect/core/utils/bill_calculator.dart';
 import 'package:hospital_connect/models/models.dart';
 
 /// Central in-memory mock dataset simulating a hospital backend database.
@@ -686,7 +687,7 @@ class MockDataService {
         serviceName: 'Cardiology Consultation & ECG Test',
         consultationFee: 800.0,
         labCharges: 450.0,
-        tax: 62.5,
+        tax: BillCalculator.calculateTax(800.0, 450.0),
         status: BillStatus.unpaid,
       ),
       BillModel(
@@ -695,7 +696,7 @@ class MockDataService {
         serviceName: 'Orthopedic Consultation & Knee Radiograph',
         consultationFee: 900.0,
         labCharges: 600.0,
-        tax: 75.0,
+        tax: BillCalculator.calculateTax(900.0, 600.0),
         status: BillStatus.paid,
         paymentMethod: PaymentMethodType.upi,
         paidAt: today.subtract(const Duration(days: 15, hours: 2)),
@@ -706,7 +707,7 @@ class MockDataService {
         serviceName: 'Neurology Consultation & Consultation Summary',
         consultationFee: 1000.0,
         labCharges: 0.0,
-        tax: 50.0,
+        tax: BillCalculator.calculateTax(1000.0, 0.0),
         status: BillStatus.pending,
       ),
       BillModel(
@@ -715,7 +716,7 @@ class MockDataService {
         serviceName: 'Pediatric Health Checkup & CBC Panel',
         consultationFee: 650.0,
         labCharges: 250.0,
-        tax: 45.0,
+        tax: BillCalculator.calculateTax(650.0, 250.0),
         status: BillStatus.paid,
         paymentMethod: PaymentMethodType.card,
         paidAt: today.subtract(const Duration(days: 45, hours: 4)),
@@ -726,7 +727,7 @@ class MockDataService {
         serviceName: 'General Consultation (Dr. Meera Nambiar)',
         consultationFee: 500.0,
         labCharges: 0.0,
-        tax: 25.0,
+        tax: BillCalculator.calculateTax(500.0, 0.0),
         status: BillStatus.pending,
         appointmentId: 'APT-100248',
       ),
@@ -763,6 +764,10 @@ class MockDataService {
     }
   }
 
+  void deleteAppointment(String appointmentId) {
+    _appointments.removeWhere((a) => a.id == appointmentId);
+  }
+
   // Bill Mutations
   void addBill(BillModel bill) {
     _bills.insert(0, bill);
@@ -782,5 +787,9 @@ class MockDataService {
         paidAt: paidAt ?? _bills[index].paidAt,
       );
     }
+  }
+
+  void removeBill(String billId) {
+    _bills.removeWhere((b) => b.id == billId);
   }
 }
